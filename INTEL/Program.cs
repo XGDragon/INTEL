@@ -16,7 +16,10 @@ namespace INTEL
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+
+            DataVisual dv = new DataVisual();
+            INTEL.Console.Initialize(dv);
+            Application.Run(dv);
         }
     }
 }

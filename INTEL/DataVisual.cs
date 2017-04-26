@@ -10,9 +10,9 @@ using System.Windows.Forms;
 
 namespace INTEL
 {
-    public partial class Form1 : Form
+    public partial class DataVisual : Form
     {
-        public Form1()
+        public DataVisual()
         {
             InitializeComponent();
         }
