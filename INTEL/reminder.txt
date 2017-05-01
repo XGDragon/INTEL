@@ -1,0 +1,2 @@
+genome needs to carry out "EvaluateFitness(...)", using decimal[] XORInputs, delegates XORActivation and XOREvaluateOutput as parameters.
+issue: output can only be evaluated after all types of inputs? problem is also risen with actual problem, where fitness equals its performance against all n random opponents!
