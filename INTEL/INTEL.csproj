@@ -58,6 +58,7 @@
     <Compile Include="Algorithm\Nodes\InputNode.cs" />
     <Compile Include="Algorithm\Nodes\Node.cs" />
     <Compile Include="Algorithm\Nodes\OutputNode.cs" />
+    <Compile Include="Algorithm\Problems\XORProblem.cs" />
     <Compile Include="Algorithm\Species.cs" />
     <Compile Include="Console.cs" />
     <Compile Include="DataVisual.cs">
@@ -67,7 +68,7 @@
       <DependentUpon>DataVisual.cs</DependentUpon>
     </Compile>
     <Compile Include="Parameter.cs" />
-    <Compile Include="Problem.cs" />
+    <Compile Include="Algorithm\Problems\Problem.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="DataVisual.resx">

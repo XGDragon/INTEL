@@ -10,13 +10,19 @@ namespace INTEL
     {
         public static Random R { get; private set; }
 
+        public Problem Problem { get; private set; }
+
         public List<Genome> Population = new List<Genome>();
         public List<Species> Species = new List<Species>();
+        //public List<Species> Species = new List<Species>(); //issues with who controls who
 
         public int Generation { get; private set; }
 
+        public Algorithm() { R = new Random(); }
+
         public void Run(Problem p, int maxGenerations)
         {
+            Problem = p;
             Initialize();
             while (Generation < maxGenerations)
                 NextGeneration();
@@ -24,37 +30,46 @@ namespace INTEL
 
         private void Initialize()
         {
-            R = new Random();
-            Generation = 0;
-
             //Initial Population
             for (int i = 0; i < Parameter.PopulationSize; i++)
                 Population.Add(new Genome());
 
-            Species.Add(new Species());
-            Population[0].ChangeSpecies(Species[0]);
+            //Speciate (potentially encapsulate)
+            Species.Add(new Species(Population[0]));
+            for (int i = 1; i < Population.Count; i++)
+            {
+                bool assigned_existing_species = false;
+                bool new_species = false;
+                int index_species = 0;
 
-            //for (int i = 1; i < Population.Count; i ++)
-            //{
-            //    bool assigned_existing_species = false;
-            //    bool new_species = false;
-            //    int index_species = 0;
+                while (!assigned_existing_species && !new_species)
+                {
+                    //at initialization, we need not worry about c1,c2, because there are no disjoint or excess connections
+                    decimal weightDifferenceTotal = 0;
+                    for (int j = 0; j < Population[i].Connections.Count; j++)
+                        weightDifferenceTotal += Math.Abs(Population[i].Connections[j] - Species[index_species].Representative.Connections[j]);
+                    decimal distance = (Parameter.c3 * weightDifferenceTotal) / Population[i].Connections.Count;
+                    if (distance < Parameter.SpeciationThreshold)
+                    {
+                        Species[index_species].Add(Population[i]);
+                        assigned_existing_species = true;
+                    }
+                    index_species++;
+                    if (index_species > Species.Count - 1 && !assigned_existing_species)
+                        new_species = true;
+                }
 
-            //    while (assigned_existing_species && new_species)
-            //    {
-            //        decimal distance = Parameter.c3;//more
-            //        if (distance < Parameter.SpeciationThreshold)
-            //        {
-            //            Population[i].ChangeSpecies(Species[index_species]);
-            //            assigned_existing_species = true;
-            //        }
-            //    }                
-            //}
+                if (new_species)
+                    Species.Add(new Species(Population[i]));
+            }
+
+            Generation = 0;
         }
 
         private void NextGeneration()
         {
-
+            foreach (Genome g in Population)
+                Problem.EvaluateFitness(g);
         }
 /*
    for index_individual=2:size(population,2);

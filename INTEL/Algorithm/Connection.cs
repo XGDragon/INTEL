@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,12 @@ namespace INTEL
         private static Dictionary<(int from, int to), uint> _connections = new Dictionary<(int from, int to), uint>();
         private static uint _innovation = 0;
         public static void Clear() { _connections.Clear(); _innovation = 0; }
+
+        public uint Innovation { get; private set; }
+        public int From { get; private set; }
+        public int To { get; private set; }
+        public decimal Weight { get; private set; }
+        public bool Enable { get; private set; }
 
         public Connection(int from, int to)
         {
@@ -43,10 +50,7 @@ namespace INTEL
             Enable = true;
         }
 
-        public uint Innovation { get; private set; }
-        public int From { get; private set; }
-        public int To { get; private set; }
-        public decimal Weight { get; private set; }
-        public bool Enable { get; private set; }
+        public static decimal operator +(Connection a, Connection b) { return a.Weight + b.Weight; }
+        public static decimal operator -(Connection a, Connection b) { return a.Weight - b.Weight; }
     }
 }

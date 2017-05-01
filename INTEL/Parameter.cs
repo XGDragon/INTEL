@@ -48,6 +48,17 @@ namespace INTEL
             }
         }
 
+        public static void SetInputs(int i)
+        {
+            _inputNodes.Value = i;
+            _maxInputNodes.Value = i;
+        }
+
+        public static void SetOutputs(int i)
+        {
+            _outputNodes.Value = i;
+        }
+
         public static List<Parameter> List = new List<Parameter>();
         public static Dictionary<int, string> ListDecorator = new Dictionary<int, string>()
             {

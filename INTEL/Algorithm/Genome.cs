@@ -8,11 +8,11 @@ namespace INTEL
 {
     class Genome
     {
-        public Dictionary<int, Node> Nodes = new Dictionary<int, Node>();
-        public List<Connection> Connections = new List<Connection>();
+        public NodeCollection Nodes = new NodeCollection();
+        public ConnectionCollection Connections = new ConnectionCollection();
 
         public decimal Fitness { get; private set; }
-        public Species MemberOf { get; private set; }
+        public Species MemberOf { get; set; }
 
         public Genome()
         {
@@ -22,27 +22,97 @@ namespace INTEL
                 Nodes.Add(i + 2, new InputNode(i + 2, false));
             //no hidden in initialization
 
-            Connections.Add(new Connection(Nodes[1], Nodes[0]));
+            Connections.Add(Nodes[1], Nodes[0]);
             for (int i = 0; i < Parameter.InputNodes && i < Parameter.MaxInputNodes; i++)
-                Connections.Add(new Connection(Nodes[i + 2], Nodes[0]));
+                Connections.Add(Nodes[i + 2], Nodes[0]);
         }
 
-        public void ChangeSpecies(Species s)
+        public class ConnectionCollection
         {
-            MemberOf = s;
-            s.Add(this);
-        }
+            private List<Connection> _connections = new List<Connection>();
 
-        public (Connection[] matching, Connection[] disjoint, Connection[] excess)[] CompareWith(Genome b)
-        {
-            Genome a = this;
-            (Connection[] matching, Connection[] disjoint, Connection[] excess)[] r = new(Connection[] matching, Connection[] disjoint, Connection[] excess)[2];
+            public Dictionary<Node, List<Connection>> Sources = new Dictionary<Node, List<Connection>>();
+            public Dictionary<Node, List<Connection>> Destinations = new Dictionary<Node, List<Connection>>();
 
-            int i = 0;
-            for (; i < a.Connections.Count; i++)
+            public Connection this[int i] { get { return _connections[i]; } }
+
+            public void Add(Node a, Node b)
             {
+                if (Sources.ContainsKey(a))
+                    Sources.Add(a, new List<Connection>());
+                if (Destinations.ContainsKey(b))
+                    Destinations.Add(b, new List<Connection>());
 
+                Connection c = new Connection(a, b);
+                _connections.Add(c);
+                Sources[a].Add(c);
+                Destinations[b].Add(c);
             }
+
+            public int Count { get { return _connections.Count; } }
         }
+
+        public class NodeCollection
+        {
+            private Dictionary<int, Node> _nodes = new Dictionary<int, Node>();
+
+            public List<Node> Inputs = new List<Node>();
+            public List<Node> Hidden = new List<Node>();
+            public List<Node> Outputs = new List<Node>();
+
+            public Node this[int i] { get { return _nodes[i]; } }
+
+            public void Add(int i, Node a)
+            {
+                _nodes.Add(i, a);
+
+                switch (a.NodeType)
+                {
+                    case Node.Type.Bias:
+                        Inputs.Add(a); break;
+                    case Node.Type.Input:
+                        Inputs.Add(a); break;
+                    case Node.Type.Hidden:
+                        Hidden.Add(a); break;
+                    case Node.Type.Output:
+                        Outputs.Add(a); break;
+                }
+            }
+
+            public int Count { get { return _nodes.Count; } }
+        }
+
+        public static bool operator >(Genome a, Genome b) { return a.Fitness > b.Fitness; }
+        public static bool operator <(Genome a, Genome b) { return a.Fitness < b.Fitness; }
+        
+        //public class Comparison
+        //{
+        //    public enum Group { Matching, Disjoint, Excess }
+        //    public enum Type { Stronger, Weaker }
+
+        //    private Dictionary<Type, Dictionary<Group, List<Connection>>> _dict = new Dictionary<Type, Dictionary<Group, List<Connection>>>();
+
+        //    private Genome _stronger { get { return (_a > _b) ? _a : _b; } }
+        //    private Genome _weaker { get { return (_a > _b) ? _b : _a; } }
+            
+        //    private Genome _a;
+        //    private Genome _b;
+
+        //    private List<Connection> _matching;
+        //    private List<Connection> _disjoint;
+        //    private List<Connection> _excess;       
+
+        //    public Comparison(Genome a, Genome b)
+        //    {
+        //        _a = a;
+        //        _b = b;
+
+        //        List<Connection> larger = (a.Connections.Count > b.Connections.Count) ? a.Connections : b.Connections;
+        //    }
+
+        //    public List<Connection> Get(Type t, Group g) { return _dict[t][g]; }
+
+            
+        //}
     }
 }
