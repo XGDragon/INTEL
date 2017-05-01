@@ -55,6 +55,7 @@
     <Compile Include="Algorithm\Connection.cs" />
     <Compile Include="Algorithm\Genome.cs" />
     <Compile Include="Algorithm\Nodes\HiddenNode.cs" />
+    <Compile Include="Algorithm\Nodes\BiasNode.cs" />
     <Compile Include="Algorithm\Nodes\InputNode.cs" />
     <Compile Include="Algorithm\Nodes\Node.cs" />
     <Compile Include="Algorithm\Nodes\OutputNode.cs" />

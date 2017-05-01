@@ -9,7 +9,7 @@ namespace INTEL
     class Genome
     {
         public NodeCollection Nodes = new NodeCollection();
-        public ConnectionCollection Connections = new ConnectionCollection();
+        public List<Connection> Connections = new List<Connection>();
 
         public decimal Fitness { get; private set; }
         public Species MemberOf { get; set; }
@@ -17,69 +17,84 @@ namespace INTEL
         public Genome()
         {
             Nodes.Add(0, new OutputNode(0));
-            Nodes.Add(1, new InputNode(1, true)); //bias
+            Nodes.Add(1, new BiasNode(1));
             for (int i = 0; i < Parameter.MaxInputNodes; i++)
                 Nodes.Add(i + 2, new InputNode(i + 2, false));
             //no hidden in initialization
 
-            Connections.Add(Nodes[1], Nodes[0]);
+            Connections.Add(Nodes[1].Connect(Nodes[0]));
             for (int i = 0; i < Parameter.InputNodes && i < Parameter.MaxInputNodes; i++)
-                Connections.Add(Nodes[i + 2], Nodes[0]);
+                Connections.Add(Nodes[i + 2].Connect(Nodes[0]));
         }
 
-        public class ConnectionCollection
+        public void EvaluateFitness(Problem.FitnessFunction ff)
         {
-            private List<Connection> _connections = new List<Connection>();
-
-            public Dictionary<Node, List<Connection>> Sources = new Dictionary<Node, List<Connection>>();
-            public Dictionary<Node, List<Connection>> Destinations = new Dictionary<Node, List<Connection>>();
-
-            public Connection this[int i] { get { return _connections[i]; } }
-
-            public void Add(Node a, Node b)
-            {
-                if (Sources.ContainsKey(a))
-                    Sources.Add(a, new List<Connection>());
-                if (Destinations.ContainsKey(b))
-                    Destinations.Add(b, new List<Connection>());
-
-                Connection c = new Connection(a, b);
-                _connections.Add(c);
-                Sources[a].Add(c);
-                Destinations[b].Add(c);
-            }
-
-            public int Count { get { return _connections.Count; } }
+            Fitness = ff(this);
         }
 
         public class NodeCollection
         {
             private Dictionary<int, Node> _nodes = new Dictionary<int, Node>();
+            private List<Node> __nodes = new List<Node>();
 
-            public List<Node> Inputs = new List<Node>();
-            public List<Node> Hidden = new List<Node>();
-            public List<Node> Outputs = new List<Node>();
+            private BiasNode _bias;
+            private List<InputNode> _inputs = new List<InputNode>();
+            private List<HiddenNode> _hidden = new List<HiddenNode>();
+            private List<OutputNode> _outputs = new List<OutputNode>();
 
             public Node this[int i] { get { return _nodes[i]; } }
 
             public void Add(int i, Node a)
             {
                 _nodes.Add(i, a);
+                __nodes.Add(a);
 
                 switch (a.NodeType)
                 {
                     case Node.Type.Bias:
-                        Inputs.Add(a); break;
+                        _bias = a as BiasNode; break;
                     case Node.Type.Input:
-                        Inputs.Add(a); break;
+                        _inputs.Add(a as InputNode); break;
                     case Node.Type.Hidden:
-                        Hidden.Add(a); break;
+                        _hidden.Add(a as HiddenNode); break;
                     case Node.Type.Output:
-                        Outputs.Add(a); break;
+                        _outputs.Add(a as OutputNode); break;
                 }
             }
 
-            public int Count { get { return _nodes.Count; } }
+            public void Inputs(decimal[] inputs)
+            {
+                for (int i = 0; i < _inputs.Count; i++)
+                    _inputs[i].SetInput(inputs[i]);
+            }
+
+            public void Activate(Problem.ActivationFunction af, params Node.Type[] types)
+            {
+                for (int i = 0; i < types.Length; i ++)
+                {
+                    switch (types[i])
+                    {
+                        case Node.Type.Bias:
+                            _bias.Activation(af); break;
+                        case Node.Type.Hidden:
+                            _hidden.ForEach((HiddenNode n) => { n.Activation(af); }); break;
+                        case Node.Type.Output:
+                            _outputs.ForEach((OutputNode n) => { n.Activation(af); }); break;
+                        case Node.Type.Input:
+                            _inputs.ForEach((InputNode n) => { n.Activation(af); }); break;
+                    }
+                }
+            }
+
+            public decimal[] Outputs()
+            {
+                decimal[] d = new decimal[__nodes.Count];
+                for (int i = 0; i < __nodes.Count; i++)
+                    d[i] = __nodes[i].Output;
+                return d;
+            }
+
+            public int Count { get { return __nodes.Count; } }
         }
 
         public static bool operator >(Genome a, Genome b) { return a.Fitness > b.Fitness; }

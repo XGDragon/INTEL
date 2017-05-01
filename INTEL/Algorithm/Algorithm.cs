@@ -69,7 +69,7 @@ namespace INTEL
         private void NextGeneration()
         {
             foreach (Genome g in Population)
-                Problem.EvaluateFitness(g);
+                g.EvaluateFitness(Problem.FitnessFunc);
         }
 /*
    for index_individual=2:size(population,2);

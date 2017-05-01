@@ -8,8 +8,11 @@ namespace INTEL
 {
     abstract class Problem
     {
+        public delegate decimal ActivationFunction(decimal input);
+        public delegate decimal FitnessFunction(Genome g);
+
         public abstract string Name { get; }
-        public abstract decimal EvaluateFitness(Genome g);
+        public abstract FitnessFunction FitnessFunc { get; }
         public abstract void Initialize();
     }
 }
