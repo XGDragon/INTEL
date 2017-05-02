@@ -10,7 +10,7 @@ namespace INTEL
     {
         public static Random R { get; private set; }
 
-        public Problem Problem { get; private set; }
+        public Problem[] Problem { get; private set; }
 
         public List<Genome> Population = new List<Genome>();
         public List<Species> Species = new List<Species>();
@@ -20,7 +20,7 @@ namespace INTEL
 
         public Algorithm() { R = new Random(); }
 
-        public void Run(Problem p, int maxGenerations)
+        public void Run(Problem[] p, int maxGenerations)
         {
             Problem = p;
             Initialize();
@@ -69,7 +69,7 @@ namespace INTEL
         private void NextGeneration()
         {
             foreach (Genome g in Population)
-                g.EvaluateFitness(Problem.FitnessFunc);
+                g.EvaluateFitness(Problem);
         }
 /*
    for index_individual=2:size(population,2);

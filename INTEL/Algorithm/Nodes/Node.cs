@@ -35,7 +35,7 @@ namespace INTEL
             Output = af(Input);
         }
         
-        public void ExportOutput()
+        public void Export()
         {
             foreach (Connection c in _connections)
                 if (c.Enable)

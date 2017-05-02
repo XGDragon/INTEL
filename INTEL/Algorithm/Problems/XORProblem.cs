@@ -10,6 +10,8 @@ namespace INTEL
     {
         public override string Name { get { return "XOR Problem"; } }
 
+        private int _patternEnumerator = 0;
+
         private decimal[][] _inputPattern = new decimal[4][]
             {
                 new decimal[2] { 0, 0 },
@@ -25,56 +27,34 @@ namespace INTEL
                 1,
                 1
             };
-
-        public override FitnessFunction FitnessFunc => (Genome g) =>
+        
+        public override ActivationFunction Activation => (decimal input) => 
         {
-            for (int i = 0; i < _inputPattern.Length; i++) //for each input pattern
-            {
-                g.Nodes.Inputs(_inputPattern[i]);
-                g.Nodes.Activate(XORInputActivation, Node.Type.Bias, Node.Type.Input);
-                g.Nodes.Activate(XORActivation, Node.Type.Hidden, Node.Type.Output);
-
-                int no_change_count = 0;
-                int index_loop = 0;
-
-                while (no_change_count < g.Nodes.Count && index_loop < 3 * g.Connections.Count)
-                {
-                    index_loop++;
-                    decimal[] outputs = g.Nodes.Outputs();
-                    for (int j = 0; j < g.Nodes.Count; j++)
-                        g.Nodes[j].ExportOutput();
-                    //line 55 of xorexperiment.m
-                    //g.Nodes.Activate(XORActivation, Node.Type.Hidden, Node.Type.Output);
-                }
-            }
-
-            return 0;
+            double e = -4.9 * (double)input;
+            return (decimal)(1 / (1 + Math.Exp(e)));
         };
 
-        public ActivationFunction XORInputActivation
+        public override FitnessFunction Fitness => throw new NotImplementedException();
+
+        public override InputFunction Input => () =>
         {
-            get =>
-                (decimal input) =>
-                {
-                    return input;
-                };
+            return _inputPattern[_patternEnumerator++];
+        };
+
+        public override bool HasInput
+        {
+            get
+            {
+                return _patternEnumerator < _inputPattern.Length;
+            }
         }
 
-        public ActivationFunction XORActivation
-        {
-            get =>
-                (decimal input) =>
-                {
-                    double e = -4.9 * (double)input;
-                    return (decimal)(1 / (1 + Math.Exp(e)));
-                };
-        }
-
-
-        public override void Initialize()
+        public override Problem[] Initialize()
         {
             Parameter.SetInputs(2);
             Parameter.SetOutputs(1);
+
+            return new Problem[1] { this };
         }
     }
 }

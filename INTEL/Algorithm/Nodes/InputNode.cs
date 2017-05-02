@@ -8,7 +8,7 @@ namespace INTEL
 {
     class InputNode : Node
     {
-        public InputNode(int id, bool bias) : base(id)
+        public InputNode(int id) : base(id)
         {
             NodeType = Type.Input;
         }
