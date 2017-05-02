@@ -58,8 +58,11 @@
     <Compile Include="Algorithm\Nodes\BiasNode.cs" />
     <Compile Include="Algorithm\Nodes\InputNode.cs" />
     <Compile Include="Algorithm\Nodes\Node.cs" />
+    <Compile Include="Algorithm\Nodes\NodeCollection.cs" />
     <Compile Include="Algorithm\Nodes\OutputNode.cs" />
+    <Compile Include="Algorithm\Problems\ProblemFactory.cs" />
     <Compile Include="Algorithm\Problems\XORProblem.cs" />
+    <Compile Include="Algorithm\Problems\XORProblemFactory.cs" />
     <Compile Include="Algorithm\Species.cs" />
     <Compile Include="Console.cs" />
     <Compile Include="DataVisual.cs">

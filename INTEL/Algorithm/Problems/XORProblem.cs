@@ -8,8 +8,6 @@ namespace INTEL
 {
     class XORProblem : Problem
     {
-        public override string Name { get { return "XOR Problem"; } }
-
         private int _patternEnumerator = 0;
 
         private decimal[][] _inputPattern = new decimal[4][]
@@ -34,7 +32,10 @@ namespace INTEL
             return (decimal)(1 / (1 + Math.Exp(e)));
         };
 
-        public override FitnessFunction Fitness => throw new NotImplementedException();
+        public override FitnessFunction Fitness => (Genome g) =>
+        {
+            return 0;
+        };
 
         public override InputFunction Input => () =>
         {
@@ -47,14 +48,6 @@ namespace INTEL
             {
                 return _patternEnumerator < _inputPattern.Length;
             }
-        }
-
-        public override Problem[] Initialize()
-        {
-            Parameter.SetInputs(2);
-            Parameter.SetOutputs(1);
-
-            return new Problem[1] { this };
         }
     }
 }

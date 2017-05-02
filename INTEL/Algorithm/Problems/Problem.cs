@@ -12,13 +12,10 @@ namespace INTEL
         public delegate decimal FitnessFunction(Genome g);
         public delegate decimal[] InputFunction();
         
-        public virtual ActivationFunction InputActivation => (decimal input) => { return input; };
+        public virtual  ActivationFunction InputActivation => (decimal input) => { return input; };
         public abstract ActivationFunction Activation { get; }
         public abstract FitnessFunction Fitness { get; }
         public abstract InputFunction Input { get; }
         public abstract bool HasInput { get; }
-        public abstract string Name { get; }
-        
-        public abstract Problem[] Initialize();
     }
 }

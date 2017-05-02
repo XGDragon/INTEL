@@ -7,7 +7,7 @@ namespace INTEL
     {
         static BackgroundWorker _bgw = new BackgroundWorker();
         static DataVisual _dv;
-        static Problem[] _problems = new Problem[] { new XORProblem() };
+        static ProblemFactory[] _problems = new ProblemFactory[] { new XORProblemFactory() };
 
         const int PROBLEM = 1;
         const int GENERATIONS = 2;
@@ -56,7 +56,7 @@ namespace INTEL
                 m = ParseInput(System.Console.ReadLine(), 9999);
 
             Algorithm a = new Algorithm();
-            a.Run(_problems[p - 1], m);
+            a.Run(_problems[p - 1].Create(), m);
         }
 
         private static int ParseInput(string input, int max)

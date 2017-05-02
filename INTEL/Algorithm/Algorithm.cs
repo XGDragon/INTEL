@@ -23,6 +23,7 @@ namespace INTEL
         public void Run(Problem[] p, int maxGenerations)
         {
             Problem = p;
+
             Initialize();
             while (Generation < maxGenerations)
                 NextGeneration();
@@ -69,7 +70,8 @@ namespace INTEL
         private void NextGeneration()
         {
             foreach (Genome g in Population)
-                g.EvaluateFitness(Problem);
+                for (int i = 0; i < Problem.Length; i++)
+                    g.EvaluateFitness(Problem[i]);
         }
 /*
    for index_individual=2:size(population,2);
