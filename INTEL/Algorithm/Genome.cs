@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace INTEL
 {
-    class Genome
+    class Genome : IComparable<Genome>
     {
         public NodeCollection Nodes = new NodeCollection();
         public List<Connection> Connections = new List<Connection>();
@@ -77,6 +77,14 @@ namespace INTEL
             //SEE PAPER FOR IDEAS ON FITNESS FUNCTIONS ETC, PAGE 112
         }
 
+        public int CompareTo(Genome other)
+        {
+            if (this > other)
+                return 1;
+            if (this < other)
+                return -1;
+            else return 0;
+        }
 
         public static bool operator >(Genome a, Genome b) { return a.Fitness > b.Fitness; }
         public static bool operator <(Genome a, Genome b) { return a.Fitness < b.Fitness; }

@@ -20,6 +20,8 @@ namespace INTEL
         {
             Parameter.SetInputs(2);
             Parameter.SetOutputs(1);
+
+            MaxFitness = 16;
         }
     }
 }

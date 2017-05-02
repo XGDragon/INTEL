@@ -102,7 +102,7 @@ namespace INTEL
         private static Parameter _stagnationThreshold = new Parameter("Stagnation Threshold", 0.02m, "threshold to judge if a species is in stagnation");
         public static decimal StagnationThreshold { get { return _stagnationThreshold.Value; } }
 
-        private static Parameter _stagnationGenerations = new Parameter("Stagnation Generations", 15, "if max fitness of species has stayed within stagnation.threshold in the last stagnation.number_generation generations, all its fitnesses will be reduced to 0");
+        private static Parameter _stagnationGenerations = new Parameter("Stagnation Generations", 15, "if max fitness of species has stayed within stagnation.threshold in the last stagnation.number_generation generations, all its fitnesses will be reduced to 0 (this kills the species)");
         public static decimal StagnationGenerations { get { return _stagnationGenerations.Value; } }
 
         private static Parameter _refocusThreshold = new Parameter("Refocus Threshold", 0.02m, "threshold to judge if a species needs refocusing");

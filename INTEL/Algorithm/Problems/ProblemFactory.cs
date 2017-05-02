@@ -8,9 +8,11 @@ namespace INTEL
 {
     abstract class ProblemFactory
     {
+        public abstract string Name { get; }
+        public decimal MaxFitness { get; protected set; }
+
         public abstract void Initialize();
         public abstract Problem[] Create();
-        public abstract string Name { get; }
 
         protected string InitiatilizingText { get { return "\nInitializing " + Name; } }
     }
