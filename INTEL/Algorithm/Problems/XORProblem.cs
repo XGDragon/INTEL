@@ -12,29 +12,36 @@ namespace INTEL
 
         private decimal[][] _inputPattern = new decimal[4][]
             {
-                new decimal[2] { 0, 0 },
-                new decimal[2] { 0, 1 },
-                new decimal[2] { 1, 0 },
-                new decimal[2] { 1, 1 }
+                new decimal[] { 0, 0 },
+                new decimal[] { 0, 1 },
+                new decimal[] { 1, 0 },
+                new decimal[] { 1, 1 }
             };
 
-        private decimal[] _outputPattern = new decimal[4]
+        private decimal[][] _outputPattern = new decimal[4][]
             {
-                0,
-                0,
-                1,
-                1
+                new decimal[] { 0 },
+                new decimal[] { 0 },
+                new decimal[] { 1 },
+                new decimal[] { 1 }
             };
         
         public override ActivationFunction Activation => (decimal input) => 
         {
-            double e = -4.9 * (double)input;
+            double e = -4.9 * (double)input; //Parameter used by the paper for XOR problem, pp 112
             return (decimal)(1 / (1 + Math.Exp(e)));
         };
 
-        public override FitnessFunction Fitness => (Genome g) =>
+        public override FitnessFunction Fitness => (List<decimal[]> outputs) =>
         {
-            return 0;
+            _patternEnumerator = 0; //reset the enumerator for future use of this problem instance
+
+            decimal totalFitness = 0;
+            for (int i = 0; i < outputs.Count; i++)
+                totalFitness += Math.Abs(_outputPattern[i][0] - outputs[i][0]);
+
+            totalFitness = 4 - totalFitness; //(4 - f) ^ 2
+            return totalFitness * totalFitness;
         };
 
         public override InputFunction Input => () =>

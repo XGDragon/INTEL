@@ -19,12 +19,21 @@ namespace INTEL
 
         public Node this[int i] { get { return _nodes[i]; } }
 
+        /// <summary>
+        /// Obtain inputs for Input Nodes
+        /// </summary>
+        /// <param name="inputs">Array of inputs, where InputNode[0].Input is set to inputs[0]</param>
         public void Accept(decimal[] inputs)
         {
-            for (int i = 0; i < _inputs.Count; i++)
+            for (int i = 0; i < _inputs.Count && i < inputs.Length; i++)
                 _inputs[i].SetInput(inputs[i]);
         }
 
+        /// <summary>
+        /// Activate groups of nodes, transforming input into output using the specified Activation Function. Inputs are set to 0 after activation.
+        /// </summary>
+        /// <param name="af">Problem-specific Activation Function</param>
+        /// <param name="types">Node groups</param>
         public void Activate(Problem.ActivationFunction af, params Node.Type[] types)
         {
             for (int i = 0; i < types.Length; i++)
@@ -43,7 +52,10 @@ namespace INTEL
             }
         }
 
-        public decimal[] Outputs()
+        /// <summary>
+        /// Reports a vector of all node Outputs.
+        /// </summary>
+        public decimal[] AllOutputs()
         {
             decimal[] d = new decimal[__nodes.Count];
             for (int i = 0; i < __nodes.Count; i++)
@@ -51,6 +63,18 @@ namespace INTEL
             return d;
         }
 
+        /// <summary>
+        /// Reports a vector of all Output node Outputs.
+        /// </summary>
+        public decimal[] Outputs()
+        {
+            decimal[] d = new decimal[_outputs.Count];
+            for (int i = 0; i < _outputs.Count; i++)
+                d[i] = _outputs[i].Output;
+            return d;
+        }
+
+        #region ICollection implementation
         public void Add(Node a)
         {
             _nodes.Add(a.ID, a);
@@ -122,5 +146,6 @@ namespace INTEL
         public int Count { get { return __nodes.Count; } }
 
         public bool IsReadOnly => ((ICollection<Node>)__nodes).IsReadOnly;
+        #endregion
     }
 }

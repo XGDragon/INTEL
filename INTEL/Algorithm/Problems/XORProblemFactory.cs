@@ -12,6 +12,7 @@ namespace INTEL
 
         public override Problem[] Create()
         {
+            Console.WriteLine(InitiatilizingText);
             return new XORProblem[1] { new XORProblem() };
         }
 

@@ -11,5 +11,7 @@ namespace INTEL
         public abstract void Initialize();
         public abstract Problem[] Create();
         public abstract string Name { get; }
+
+        protected string InitiatilizingText { get { return "\nInitializing " + Name; } }
     }
 }

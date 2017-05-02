@@ -16,15 +16,21 @@ namespace INTEL
         public List<Species> Species = new List<Species>();
         //public List<Species> Species = new List<Species>(); //issues with who controls who
 
-        public int Generation { get; private set; }
+        private int _generation = 0;
+        public int Generation { get { return _generation; } private set { Console.WriteLine("Generation " + _generation.ToString()); _generation = value; } }
 
-        public Algorithm() { R = new Random(); }
-
-        public void Run(Problem[] p, int maxGenerations)
+        public Algorithm(ProblemFactory pf)
         {
-            Problem = p;
+            R = new Random();
 
+            pf.Initialize();
+            Problem = pf.Create();
+        }
+
+        public void Run(int maxGenerations)
+        {
             Initialize();
+
             while (Generation < maxGenerations)
                 NextGeneration();
         }
@@ -70,8 +76,9 @@ namespace INTEL
         private void NextGeneration()
         {
             foreach (Genome g in Population)
-                for (int i = 0; i < Problem.Length; i++)
-                    g.EvaluateFitness(Problem[i]);
+                g.EvaluateFitness(Problem);
+
+            int d=0;
         }
 /*
    for index_individual=2:size(population,2);

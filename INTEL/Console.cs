@@ -9,8 +9,8 @@ namespace INTEL
         static DataVisual _dv;
         static ProblemFactory[] _problems = new ProblemFactory[] { new XORProblemFactory() };
 
-        const int PROBLEM = 1;
-        const int GENERATIONS = 2;
+        const int PROBLEM = 1;      //set to 0 to allow choice..
+        const int GENERATIONS = 2;  //set to 0 to allow choice..
 
         public static void Initialize(DataVisual dv)
         {
@@ -31,32 +31,36 @@ namespace INTEL
             Parameter.Initialize();
 
             DateTime thisDay = DateTime.UtcNow;
-            System.Console.WriteLine(thisDay + " (UTC)");
-            System.Console.WriteLine("INTEL NeuralNetwork for IPD v0.1, by Stan Noordman at Utrecht University");
+            WriteLine(thisDay + " (UTC)");
+            WriteLine("INTEL NeuralNetwork for IPD v0.1, by Stan Noordman at Utrecht University");
             for (int i = 0; i < Parameter.List.Count; i++)
             {
                 if (Parameter.ListDecorator.ContainsKey(i))
-                    System.Console.WriteLine(Parameter.ListDecorator[i]);
-                System.Console.WriteLine(i + ": " + Parameter.List[i].ToString() + " = " + Parameter.List[i].Value.ToString() + Parameter.List[i].Tooltip);
+                    WriteLine(Parameter.ListDecorator[i]);
+                WriteLine(i + ": " + Parameter.List[i].ToString() + " = " + Parameter.List[i].Value.ToString() + Parameter.List[i].Tooltip);
             }
 
-            System.Console.WriteLine("\nSelect problem:\n");
+            WriteLine("\nSelect problem:\n");
             for (int i = 0; i < _problems.Length; i++)
-                System.Console.WriteLine("<" + (i + 1) + "> " + _problems[i].Name);
+                WriteLine("<" + (i + 1) + "> " + _problems[i].Name);
 
-            System.Console.WriteLine("Input problem ID to start...");
-            int p = (PROBLEM == 0) ? -1 : PROBLEM;
+            WriteLine("\nInput problem ID to start...");
+            int p = (PROBLEM <= 0) ? -1 : PROBLEM;
             while (p == -1)
                 p = ParseInput(System.Console.ReadLine(), _problems.Length);
-            _problems[p - 1].Initialize();
 
-            System.Console.WriteLine("Input max generations...");
-            int m = (GENERATIONS == 0) ? -1 : GENERATIONS;
+            WriteLine("Input max generations...");
+            int m = (GENERATIONS <= 0) ? -1 : GENERATIONS;
             while (m == -1)
                 m = ParseInput(System.Console.ReadLine(), 9999);
 
-            Algorithm a = new Algorithm();
-            a.Run(_problems[p - 1].Create(), m);
+            Algorithm a = new Algorithm(_problems[p - 1]);
+            a.Run(m);
+        }
+
+        public static void WriteLine(string text)
+        {
+            System.Console.WriteLine(text);
         }
 
         private static int ParseInput(string input, int max)

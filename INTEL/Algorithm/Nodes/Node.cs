@@ -33,8 +33,12 @@ namespace INTEL
         public void Activation(Problem.ActivationFunction af)
         {
             Output = af(Input);
+            Input = 0;
         }
         
+        /// <summary>
+        /// Each connected nodes Input gains this nodes Output * Weight of connection.
+        /// </summary>
         public void Export()
         {
             foreach (Connection c in _connections)
