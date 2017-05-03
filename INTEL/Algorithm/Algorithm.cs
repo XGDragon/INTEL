@@ -45,7 +45,7 @@ namespace INTEL
         {
             //Initial Population
             for (int i = 0; i < Parameter.PopulationSize; i++)
-                Population.Add(new Genome());
+                Population.Add(new Genome(i));
 
             //Speciate (potentially encapsulate)
             Species.Add(new Species(Population[0]));
@@ -108,7 +108,8 @@ namespace INTEL
             foreach (Species s in Species)
             {
                 s.CalculateOffspring(ref overflow, avgFitnessAllSpecies);
-                if (s.Offspring > 0 && s.Count > Parameter.ElitismThreshold)
+                s.Elite = (s.Offspring > 0 && s.Count > Parameter.ElitismThreshold);
+                if (s.Elite)
                     newPopulation.Add(s.CurrentData.FittestGenome); //elitism
                 if (s.Count > Parameter.KillPercentage && Math.Ceiling(s.Count * (1 - Parameter.KillPercentage)) > 2)
                     s.CullTheWeak();
@@ -118,12 +119,15 @@ namespace INTEL
 
             foreach (Species s in Species)
             {
-                int count_individuals_species = 0; 
-                //selection pressure
-                //get all fitness of this species (after culling)
-                //get all ids of individuals in this species
-                //sort members from worst to best
-                //create array of rankings, size equal to _members
+                int count_individuals_species = 0;
+                s.CalculateSelectionPressure();
+
+                //offspring - if it has elite'd
+                decimal number_overall = s.Offspring - ((s.Elite) ? 1 : 0);
+                decimal number_crossover = number_overall * Parameter.CrossoverPercentage;
+                decimal number_mutate = number_overall - number_crossover;
+                decimal nind = s.Count;
+                decimal nsel = 2 * number_crossover + number_mutate;
             }
         }
         /*

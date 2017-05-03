@@ -16,8 +16,10 @@ namespace INTEL
         public bool EliminateSpecies { get; set; } //mean fitness to 0.01?
         public Data CurrentData { get; private set; }
         public int Offspring { get; private set; }
+        public bool Elite { get; set; }
 
         private List<Genome> _members = new List<Genome>();
+        private decimal[] _rankings;
         private Dictionary<int, Data> _data = new Dictionary<int, Data>();
 
         public Species(Genome representative)
@@ -79,6 +81,32 @@ namespace INTEL
         {
             _members.Sort();
             _members.RemoveRange(0, (int)Math.Floor(_members.Count * Parameter.KillPercentage));
+        }
+
+        public void CalculateSelectionPressure()
+        {
+            if (Count > 1)
+            {
+                _members.Sort();
+                decimal s = 2 - Parameter.SelectionPressure + 2 * (Parameter.SelectionPressure - 1);
+
+                _rankings = new decimal[Count];
+                for (int i = 0; i < _members.Count; i++)
+                    _rankings[_members[i].ID] = s / (_members.Count - 1) * i;
+                for (int i = 1; i < _members.Count; i++)
+                    _rankings[i] += _rankings[i - 1];
+
+                decimal number_overall = Offspring - ((Elite) ? 1 : 0);
+                decimal number_crossover = number_overall * Parameter.CrossoverPercentage;
+                decimal number_mutate = number_overall - number_crossover;
+                decimal nind = Count - 1;
+                decimal nsel = 2 * number_crossover + number_mutate;
+
+                //decimal trials = _rankings[Count - 1] / nsel 
+            }
+            else //2
+                _rankings.Add(_members[0], 2);
+                    //(2-selection.pressure+2*(selection.pressure-1)/(size(fitnesses_species,2)-1)*(ranking-1))';  
         }
 
         public int CompareTo(Species other)

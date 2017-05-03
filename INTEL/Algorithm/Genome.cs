@@ -12,11 +12,13 @@ namespace INTEL
         public NodeCollection Nodes = new NodeCollection();
         public List<Connection> Connections = new List<Connection>();
 
+        public int ID { get; private set; }
         public decimal Fitness { get; private set; }
         public Species MemberOf { get; set; }
 
-        public Genome()
+        public Genome(int id)
         {
+            ID = id;
             Nodes.Add(new OutputNode(0));
             Nodes.Add(new BiasNode(1));
             for (int i = 0; i < Parameter.MaxInputNodes; i++)
