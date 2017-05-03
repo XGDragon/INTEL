@@ -100,40 +100,31 @@ namespace INTEL
 
             //check if solution found?
 
-            //sum average fitness of all species
-            decimal avgFitnessAllSpecies = Species.Average((Species s) => { return s.CurrentData.MeanFitness; });
             List<Genome> newPopulation = new List<Genome>();
+            Species.RemoveAll((Species s) => { return s.Count == 0; });
 
+            decimal avgFitnessAllSpecies = Species.Average((Species s) => { return s.CurrentData.MeanFitness; });
             decimal overflow = 0;
-            int index_individual = 0;
-            List<Species> matrix_existing_and_propagating_species = new List<Species>();
             foreach (Species s in Species)
             {
-                if (s.Count > 0)
-                {
-                    decimal number_offspring = s.CurrentData.MeanFitness / avgFitnessAllSpecies * Parameter.PopulationSize;
-                    overflow += number_offspring - Math.Truncate(number_offspring);
-                    number_offspring = (overflow > 1) ? Math.Ceiling(number_offspring) : Math.Floor(number_offspring);
+                s.CalculateOffspring(ref overflow, avgFitnessAllSpecies);
+                if (s.Offspring > 0 && s.Count > Parameter.ElitismThreshold)
+                    newPopulation.Add(s.CurrentData.FittestGenome); //elitism
+                if (s.Count > Parameter.KillPercentage && Math.Ceiling(s.Count * (1 - Parameter.KillPercentage)) > 2)
+                    s.CullTheWeak();
 
-                    if (number_offspring > 0)
-                    {
-                        matrix_existing_and_propagating_species.Add(s);
-                        if (s.Count > Parameter.ElitismThreshold)
-                        {
-                            index_individual++;
-                            newPopulation.Add(s.CurrentData.FittestGenome);
-                        }
-                    }
-
-                    if (s.Count > Parameter.KillPercentage && Math.Ceiling(s.Count * (1 - Parameter.KillPercentage)) > 2)
-                    {
-                        //get from this species all indivudals and their fitnesses..
-                        //sort this list from shit tier to S tier
-                        //destroy Parameter.KillPercentage bottom tier
-                    }
-                }
+                s.ShuffleRepresentative();
             }
 
+            foreach (Species s in Species)
+            {
+                int count_individuals_species = 0; 
+                //selection pressure
+                //get all fitness of this species (after culling)
+                //get all ids of individuals in this species
+                //sort members from worst to best
+                //create array of rankings, size equal to _members
+            }
         }
         /*
           

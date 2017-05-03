@@ -9,10 +9,13 @@ namespace INTEL
 {
     class Species : ICollection<Genome>, IComparable<Species>
     {
-        public Genome Representative { get { return _members[0]; } }
+        private static Random R = new Random();
+
+        public Genome Representative { get; private set; }
         public int GenerationsExisted { get { return _data.Count; } }
         public bool EliminateSpecies { get; set; } //mean fitness to 0.01?
         public Data CurrentData { get; private set; }
+        public int Offspring { get; private set; }
 
         private List<Genome> _members = new List<Genome>();
         private Dictionary<int, Data> _data = new Dictionary<int, Data>();
@@ -20,7 +23,13 @@ namespace INTEL
         public Species(Genome representative)
         {
             Add(representative);
+            Representative = representative;
             EliminateSpecies = false;
+        }
+
+        public void ShuffleRepresentative()
+        {
+            Representative = _members[R.Next(_members.Count)];
         }
 
         public Genome FittestGenome()
@@ -57,6 +66,19 @@ namespace INTEL
                 return (slice.Where((Species.Data d) => { return (Math.Abs(d.MaxFitness - avg) < Parameter.RefocusThreshold); }).Count() == Parameter.RefocusGenerations);
             }
             return false;
+        }
+
+        public void CalculateOffspring(ref decimal overflow, decimal globalMeanFitness)
+        {
+            decimal number_offspring = CurrentData.MeanFitness / globalMeanFitness * Parameter.PopulationSize;
+            overflow += number_offspring - Math.Truncate(number_offspring);
+            Offspring = (int)((overflow > 1) ? Math.Ceiling(number_offspring) : Math.Floor(number_offspring));
+        }
+
+        public void CullTheWeak()
+        {
+            _members.Sort();
+            _members.RemoveRange(0, (int)Math.Floor(_members.Count * Parameter.KillPercentage));
         }
 
         public int CompareTo(Species other)
