@@ -7,13 +7,12 @@ using System.Threading.Tasks;
 
 namespace INTEL
 {
-    class Species : ICollection<Genome>
+    class Species : ICollection<Genome>, IComparable<Species>
     {
         public Genome Representative { get { return _members[0]; } }
-
         public int GenerationsExisted { get { return _data.Count; } }
-
-        public bool EliminateSpecies { get; private set; } //mean fitness to 0.01?
+        public bool EliminateSpecies { get; set; } //mean fitness to 0.01?
+        public Data CurrentData { get; private set; }
 
         private List<Genome> _members = new List<Genome>();
         private Dictionary<int, Data> _data = new Dictionary<int, Data>();
@@ -31,20 +30,22 @@ namespace INTEL
 
         public void UpdateData(int generation)
         {
-            _data.Add(generation, new Data(this, generation));
+            CurrentData = new Data(this, generation);
+            _data[generation] = CurrentData;
         }
 
-        public void CheckIfStagnant()
+        public bool CheckIfStagnant()
         {
             if (Count > 0 && GenerationsExisted >= Parameter.StagnationGenerations)
             {
                 var a = _data.Values;
                 decimal avg = a.Average((Species.Data d) => { return d.MaxFitness; });
-                EliminateSpecies = (a.Where((Species.Data d) => { return (Math.Abs(d.MaxFitness - avg) < Parameter.StagnationThreshold); }).Count() == Parameter.StagnationGenerations);
+                return (a.Where((Species.Data d) => { return (Math.Abs(d.MaxFitness - avg) < Parameter.StagnationThreshold); }).Count() == Parameter.StagnationGenerations);
             }
+            return false;
         }
 
-        public void CheckIfRefocus()
+        public bool CheckIfRefocus()
         {
             if (GenerationsExisted >= Parameter.RefocusGenerations)
             {
@@ -53,11 +54,18 @@ namespace INTEL
                     if (_data.ContainsKey(i))
                         slice.Add(_data[i]);
                 decimal avg = slice.Average((Species.Data d) => { return d.MaxFitness; });
-                if (slice.Where((Species.Data d) => { return (Math.Abs(d.MaxFitness - avg) < Parameter.RefocusThreshold); }).Count() == Parameter.RefocusGenerations)
-                {
-                    //do things, see line 170 @ neat_main.m
-                }
+                return (slice.Where((Species.Data d) => { return (Math.Abs(d.MaxFitness - avg) < Parameter.RefocusThreshold); }).Count() == Parameter.RefocusGenerations);
             }
+            return false;
+        }
+
+        public int CompareTo(Species other)
+        {
+            if (this.CurrentData.MaxFitness > other.CurrentData.MaxFitness)
+                return 1;
+            if (this.CurrentData.MaxFitness < other.CurrentData.MaxFitness)
+                return -1;
+            else return 0;
         }
 
         #region ICollection implementation
@@ -116,10 +124,20 @@ namespace INTEL
             public Data(Species s, int generation)
             {
                 Generation = generation;
-                MeanFitness = s._members.Average((Genome g) => { return g.Fitness; });
-                Genome f = s._members.Max();
-                MaxFitness = f.Fitness;
-                FittestGenome = f;
+
+                if (s._members.Count > 0)
+                {
+                    MeanFitness = s._members.Average((Genome g) => { return g.Fitness; });
+                    Genome f = s._members.Max();
+                    MaxFitness = f.Fitness;
+                    FittestGenome = f;
+                }
+                else
+                {
+                    MeanFitness = 0;
+                    MaxFitness = 0;
+                    FittestGenome = null;
+                }
             }
 
             public int CompareTo(Data other)

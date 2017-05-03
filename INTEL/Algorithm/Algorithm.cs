@@ -18,7 +18,7 @@ namespace INTEL
         //public List<Species> Species = new List<Species>(); //issues with who controls who
 
         private int _generation = 0;
-        public int Generation { get { return _generation; } private set { Console.WriteLine("Generation " + _generation.ToString()); _generation = value; } }
+        public int Generation { get; private set; }
 
         public Algorithm(ProblemFactory pf)
         {
@@ -32,9 +32,13 @@ namespace INTEL
         public void Run(int maxGenerations)
         {
             Initialize();
+            Console.WriteLine("Generation " + Generation);
 
-            while (Generation < maxGenerations) //best fitness < maxfitness, otherwise stop
+            while (Generation++ < maxGenerations) //best fitness < maxfitness, otherwise stop
+            {
+                Console.WriteLine("Generation " + Generation);
                 NextGeneration();
+            }
         }
 
         private void Initialize()
@@ -80,23 +84,55 @@ namespace INTEL
         {
             foreach (Genome g in Population)
                 g.EvaluateFitness(Problem);
-
-            (Species s, Genome f) strongestSpecies = (null, null);
+            
             foreach (Species s in Species)
             {
                 s.UpdateData(Generation);
-                s.CheckIfStagnant();
-
-                Genome f = s.FittestGenome();
-                if (strongestSpecies.s == null)
-                    strongestSpecies = (s, f);
-                else
-                    strongestSpecies = (f > strongestSpecies.f) ? (s, f) : strongestSpecies;
+                s.EliminateSpecies = s.CheckIfStagnant();
             }
-            strongestSpecies.s.CheckIfRefocus();
-            //refocus is not yet complete! something is probably wrong with fitness func
 
-            
+            if (Species.Max().CheckIfRefocus())
+            {
+                Species.Sort();     //from worst to best
+                for (int i = 0; i < Species.Count - 2; i++) //exclude the 2 best species
+                    Species[i].EliminateSpecies = (Species[i].CurrentData.MaxFitness > 0);
+            }
+
+            //check if solution found?
+
+            //sum average fitness of all species
+            decimal avgFitnessAllSpecies = Species.Average((Species s) => { return s.CurrentData.MeanFitness; });
+            List<Genome> newPopulation = new List<Genome>();
+
+            decimal overflow = 0;
+            int index_individual = 0;
+            List<Species> matrix_existing_and_propagating_species = new List<Species>();
+            foreach (Species s in Species)
+            {
+                if (s.Count > 0)
+                {
+                    decimal number_offspring = s.CurrentData.MeanFitness / avgFitnessAllSpecies * Parameter.PopulationSize;
+                    overflow += number_offspring - Math.Truncate(number_offspring);
+                    number_offspring = (overflow > 1) ? Math.Ceiling(number_offspring) : Math.Floor(number_offspring);
+
+                    if (number_offspring > 0)
+                    {
+                        matrix_existing_and_propagating_species.Add(s);
+                        if (s.Count > Parameter.ElitismThreshold)
+                        {
+                            index_individual++;
+                            newPopulation.Add(s.CurrentData.FittestGenome);
+                        }
+                    }
+
+                    if (s.Count > Parameter.KillPercentage && Math.Ceiling(s.Count * (1 - Parameter.KillPercentage)) > 2)
+                    {
+                        //get from this species all indivudals and their fitnesses..
+                        //sort this list from shit tier to S tier
+                        //destroy Parameter.KillPercentage bottom tier
+                    }
+                }
+            }
 
         }
         /*

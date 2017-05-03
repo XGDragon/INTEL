@@ -36,6 +36,12 @@ namespace INTEL
             Enable = true;
         }
 
+        public override string ToString()
+        {
+            string d = (Enable) ? "" : "DISABLED** ";
+            return d + Innovation + ": [" + Weight.ToString("F") + "] " + From.ID + "(" + From.NodeType + ") > " + To.ID + "(" + To.NodeType + ")";
+        }
+
         public static decimal operator +(Connection a, Connection b) { return a.Weight + b.Weight; }
         public static decimal operator -(Connection a, Connection b) { return a.Weight - b.Weight; }
     }

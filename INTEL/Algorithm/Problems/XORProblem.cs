@@ -21,9 +21,9 @@ namespace INTEL
         private decimal[][] _outputPattern = new decimal[4][]
             {
                 new decimal[] { 0 },
-                new decimal[] { 0 },
                 new decimal[] { 1 },
-                new decimal[] { 1 }
+                new decimal[] { 1 },
+                new decimal[] { 0 }
             };
         
         public override ActivationFunction Activation => (decimal input) => 

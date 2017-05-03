@@ -118,8 +118,8 @@ namespace INTEL
         private static Parameter _killAmount = new Parameter("Kill Amount", 5, "the above percentage for eliminating individuals will only be used in species which have more individuals than min_number_for_kill");
         public static decimal KillAmount { get { return _killAmount.Value; } }
 
-        private static Parameter _elitism = new Parameter("Elitism", 5, "species which have equal or greater than number_copy individuals will have their best individual copied unchanged into the next generation");
-        public static decimal Elitism { get { return _elitism.Value; } }
+        private static Parameter _elitism = new Parameter("Elitism Threshold", 5, "species which have individuals equal or greater than this threshold will have their best individual copied unchanged into the next generation");
+        public static decimal ElitismThreshold { get { return _elitism.Value; } }
 
         //Selection
         private static Parameter _selectionPressure = new Parameter("Pressure", 2.0m, "Number between 1.1 and 2.0, determines selective pressure towards most fit individual of species");
