@@ -34,7 +34,7 @@ namespace INTEL
         public Genome(Genome mutate)
         {
             Nodes = new NodeCollection(mutate.Nodes);
-            //connect nodes
+            //connect nodes, condition at line 148: size(parent2.nodegenes,2) > 4 & size(parent1.nodegenes,2) > 4 & size(parent2.nodegenes,2) ~= size(parent1.nodegenes,2)
         }
 
         public Genome(Genome parent1, Genome parent2)
