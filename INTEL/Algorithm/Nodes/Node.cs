@@ -6,22 +6,31 @@ using System.Threading.Tasks;
 
 namespace INTEL
 {
-    abstract class Node
+    class Node
     {
+        private const decimal BIAS_INPUT = 1;
+
         public enum Type { Input, Output, Hidden, Bias };
 
         public int ID { get; protected set; }
         public Type NodeType { get; protected set; }
-        public virtual decimal Input { get; protected set; }
-        public decimal Output { get; protected set; }
 
-        public int ConnectionsCount { get { return _connections.Count; } }
+        private decimal _input = 0;
+        public virtual decimal Input { get { return (NodeType == Type.Bias) ? BIAS_INPUT : _input; } set { _input = value; } }
+        public decimal Output { get; protected set; }
 
         private List<Connection> _connections = new List<Connection>();
 
-        public Node(int id)
+        public Node(int id, Type type)
         {
             ID = id;
+            NodeType = type;
+        }
+
+        public Node(Node copy)
+        {
+            ID = copy.ID;
+            NodeType = copy.NodeType;            
         }
 
         public Connection Connect(Node target)

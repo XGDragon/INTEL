@@ -9,25 +9,38 @@ namespace INTEL
 {
     class Genome : IComparable<Genome>
     {
-        public NodeCollection Nodes = new NodeCollection();
+        //candidates for privatization
+        public NodeCollection Nodes { get; private set; }
         public List<Connection> Connections = new List<Connection>();
-
-        public int ID { get; private set; }
+        
         public decimal Fitness { get; private set; }
         public Species MemberOf { get; set; }
 
-        public Genome(int id)
+        public Genome()
         {
-            ID = id;
-            Nodes.Add(new OutputNode(0));
-            Nodes.Add(new BiasNode(1));
+            Nodes = new NodeCollection();
+
+            Nodes.Add(new Node(0, Node.Type.Output));
+            Nodes.Add(new Node(1, Node.Type.Bias));
             for (int i = 0; i < Parameter.MaxInputNodes; i++)
-                Nodes.Add(new InputNode(i + 2));
+                Nodes.Add(new Node(i + 2, Node.Type.Input));
             //no hidden in initialization
 
             Connections.Add(Nodes[1].Connect(Nodes[0]));
             for (int i = 0; i < Parameter.InputNodes && i < Parameter.MaxInputNodes; i++)
                 Connections.Add(Nodes[i + 2].Connect(Nodes[0]));
+        }
+
+        public Genome(Genome mutate)
+        {
+            Nodes = new NodeCollection(mutate.Nodes);
+            //connect nodes
+        }
+
+        public Genome(Genome parent1, Genome parent2)
+        {
+            Nodes = new NodeCollection(parent1.Nodes, parent2.Nodes);
+            //need to connect nodes; need to find matching/disjoint/excess. perhaps by going node by node?
         }
 
         public void EvaluateFitness(Problem[] problems)
@@ -88,8 +101,18 @@ namespace INTEL
             else return 0;
         }
 
+
+
         public static bool operator >(Genome a, Genome b) { return a.Fitness > b.Fitness; }
         public static bool operator <(Genome a, Genome b) { return a.Fitness < b.Fitness; }
+
+        public class ConnectionComparison
+        {
+            public ConnectionComparison(Genome a, Genome b)
+            {
+
+            }
+        }
         
         //public class Comparison
         //{

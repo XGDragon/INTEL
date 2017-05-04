@@ -126,7 +126,7 @@ namespace INTEL
         public static decimal SelectionPressure { get { return _selectionPressure.Value; } }
 
         //Crossover
-        private static Parameter _crossoverPercentage = new Parameter("Percentage", 0.2m, "percentage governs the way in which new population will be composed from old population.");
+        private static Parameter _crossoverPercentage = new Parameter("Percentage", 0.8m, "percentage governs the way in which new population will be composed from old population.");
         public static decimal CrossoverPercentage { get { return _crossoverPercentage.Value; } }
 
         private static Parameter _crossoverInterspecies = new Parameter("Interspecies", 0.0m, "if crossover has been selected, this probability governs the intra/interspecies parent composition being used");

@@ -12,12 +12,26 @@ namespace INTEL
         private Dictionary<int, Node> _nodes = new Dictionary<int, Node>();
         private List<Node> __nodes = new List<Node>();
 
-        private BiasNode _bias;
-        private List<InputNode> _inputs = new List<InputNode>();
-        private List<HiddenNode> _hidden = new List<HiddenNode>();
-        private List<OutputNode> _outputs = new List<OutputNode>();
+        private Node _bias;
+        private List<Node> _inputs = new List<Node>();
+        private List<Node> _hidden = new List<Node>();
+        private List<Node> _outputs = new List<Node>();
 
         public Node this[int i] { get { return _nodes[i]; } }
+
+        public NodeCollection() { }
+        
+        public NodeCollection(NodeCollection a)
+        {
+            for (int i = 0; i < a.Count; i++)
+                Add(new Node(a.__nodes[i]));
+        }
+
+        public NodeCollection(NodeCollection a, NodeCollection b) : this(a)
+        {            
+            for (int i = 0; i < b.Count; i++)
+                Add(new Node(b.__nodes[i]));
+        }
 
         /// <summary>
         /// Obtain inputs for Input Nodes
@@ -26,7 +40,7 @@ namespace INTEL
         public void Accept(decimal[] inputs)
         {
             for (int i = 0; i < _inputs.Count && i < inputs.Length; i++)
-                _inputs[i].SetInput(inputs[i]);
+                _inputs[i].Input = inputs[i];
         }
 
         /// <summary>
@@ -43,11 +57,11 @@ namespace INTEL
                     case Node.Type.Bias:
                         _bias.Activation(af); break;
                     case Node.Type.Hidden:
-                        _hidden.ForEach((HiddenNode n) => { n.Activation(af); }); break;
+                        _hidden.ForEach((Node n) => { n.Activation(af); }); break;
                     case Node.Type.Output:
-                        _outputs.ForEach((OutputNode n) => { n.Activation(af); }); break;
+                        _outputs.ForEach((Node n) => { n.Activation(af); }); break;
                     case Node.Type.Input:
-                        _inputs.ForEach((InputNode n) => { n.Activation(af); }); break;
+                        _inputs.ForEach((Node n) => { n.Activation(af); }); break;
                 }
             }
         }
@@ -77,19 +91,22 @@ namespace INTEL
         #region ICollection implementation
         public void Add(Node a)
         {
+            if (_nodes.ContainsKey(a.ID))
+                return;
+
             _nodes.Add(a.ID, a);
             __nodes.Add(a);
 
             switch (a.NodeType)
             {
                 case Node.Type.Bias:
-                    _bias = a as BiasNode; break;
+                    _bias = a; break;
                 case Node.Type.Input:
-                    _inputs.Add(a as InputNode); break;
+                    _inputs.Add(a); break;
                 case Node.Type.Hidden:
-                    _hidden.Add(a as HiddenNode); break;
+                    _hidden.Add(a); break;
                 case Node.Type.Output:
-                    _outputs.Add(a as OutputNode); break;
+                    _outputs.Add(a); break;
             }
         }
 
@@ -123,11 +140,11 @@ namespace INTEL
                 case Node.Type.Bias:
                     _bias = null; break;
                 case Node.Type.Input:
-                    _inputs.Remove(a as InputNode); ; break;
+                    _inputs.Remove(a); ; break;
                 case Node.Type.Hidden:
-                    _hidden.Remove(a as HiddenNode); break;
+                    _hidden.Remove(a); break;
                 case Node.Type.Output:
-                    _outputs.Remove(a as OutputNode); break;
+                    _outputs.Remove(a); break;
             }
 
             return __nodes.Remove(a);

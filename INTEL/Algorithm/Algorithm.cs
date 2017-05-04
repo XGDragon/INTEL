@@ -16,8 +16,7 @@ namespace INTEL
         public List<Genome> Population = new List<Genome>();
         public List<Species> Species = new List<Species>();
         //public List<Species> Species = new List<Species>(); //issues with who controls who
-
-        private int _generation = 0;
+        
         public int Generation { get; private set; }
 
         public Algorithm(ProblemFactory pf)
@@ -45,7 +44,7 @@ namespace INTEL
         {
             //Initial Population
             for (int i = 0; i < Parameter.PopulationSize; i++)
-                Population.Add(new Genome(i));
+                Population.Add(new Genome());
 
             //Speciate (potentially encapsulate)
             Species.Add(new Species(Population[0]));
@@ -119,21 +118,30 @@ namespace INTEL
 
             foreach (Species s in Species)
             {
-                int count_individuals_species = 0;
-                s.CalculateSelectionPressure();
+                int overall = s.Offspring - ((s.Elite) ? 1 : 0);
+                int crossovers = (int)Math.Round(overall * Parameter.CrossoverPercentage);
+                int mutations = overall - crossovers;
+                var selected = s.Select(crossovers, mutations);
+                int parent = 0;
 
-                //offspring - if it has elite'd
-                decimal number_overall = s.Offspring - ((s.Elite) ? 1 : 0);
-                decimal number_crossover = number_overall * Parameter.CrossoverPercentage;
-                decimal number_mutate = number_overall - number_crossover;
-                decimal nind = s.Count;
-                decimal nsel = 2 * number_crossover + number_mutate;
+                while (crossovers-- > 0)
+                {
+                    if ((decimal)R.NextDouble() < Parameter.CrossoverInterspecies)
+                    {
+                        //CrossoverInterspecies
+                    }
+                    else
+                    {
+                        //Crossover within Species
+                        newPopulation.Add(new Genome(selected[parent++], selected[parent++]));
+                    }
+                }
+
+                while (mutations-- > 0)
+                {
+                    newPopulation.Add(new Genome(selected[parent++]));
+                }
             }
         }
-        /*
-          
-
-
-        */
     }
 }
