@@ -54,8 +54,9 @@
     <Compile Include="Algorithm\Algorithm.cs" />
     <Compile Include="Algorithm\Connection.cs" />
     <Compile Include="Algorithm\Genome.cs" />
-    <Compile Include="Algorithm\Nodes\Node.cs" />
-    <Compile Include="Algorithm\Nodes\NodeCollection.cs" />
+    <Compile Include="Algorithm\GenomeComparison.cs" />
+    <Compile Include="Algorithm\Node.cs" />
+    <Compile Include="Algorithm\NodeCollection.cs" />
     <Compile Include="Algorithm\Problems\ProblemFactory.cs" />
     <Compile Include="Algorithm\Problems\XORProblem.cs" />
     <Compile Include="Algorithm\Problems\XORProblemFactory.cs" />

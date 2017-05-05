@@ -17,20 +17,69 @@ namespace INTEL
         private List<Node> _hidden = new List<Node>();
         private List<Node> _outputs = new List<Node>();
 
+        private Dictionary<int, Connection> _connections = new Dictionary<int, Connection>();
+        public IReadOnlyDictionary<int, Connection> Connections { get { return _connections; } }
+
         public Node this[int i] { get { return _nodes[i]; } }
 
         public NodeCollection() { }
         
-        public NodeCollection(NodeCollection a)
+        /// <summary>
+        /// Mutation
+        /// </summary>
+        public NodeCollection(Genome copy) 
         {
-            for (int i = 0; i < a.Count; i++)
-                Add(new Node(a.__nodes[i]));
+            for (int i = 0; i < copy.Nodes.Count; i++)
+                Add(new Node(copy.Nodes.__nodes[i]));
+
+            foreach (Connection c in _connections.Values)
+                Connect(c);
+
+            //and add connections
         }
 
-        public NodeCollection(NodeCollection a, NodeCollection b) : this(a)
+        /// <summary>
+        /// Crossover
+        /// </summary>
+        public NodeCollection(Genome parent1, Genome parent2) : this(parent1)
         {            
-            for (int i = 0; i < b.Count; i++)
-                Add(new Node(b.__nodes[i]));
+            for (int i = 0; i < parent2.Nodes.Count; i++)
+                Add(new Node(parent2.Nodes.__nodes[i]));
+            
+            GenomeComparison gc = new GenomeComparison(parent1, parent2);
+            List<Connection>[] cc = new List<Connection>[4]
+            {
+                gc[GenomeComparison.Stronger, GenomeComparison.Matching],
+                gc[GenomeComparison.Weaker, GenomeComparison.Matching],
+                gc[GenomeComparison.Stronger, GenomeComparison.Disjoint],
+                gc[GenomeComparison.Stronger, GenomeComparison.Excess]
+            };
+
+            for (int i = 1; i < cc.Length; i++)
+                for (int j = 0; j < cc[i].Count; j++)
+                    if (i == 1)
+                        Connect(cc[i - 1][j], cc[i][j]);
+                    else
+                        Connect(cc[i][j]);
+        }
+
+        public void Connect(Node a, Node b)
+        {
+            Connection c = new Connection(a, b);
+            _connections.Add(c.Innovation, c);
+            a.AddConnection(c);
+        }
+
+        private void Connect(Connection copy, Connection copy2 = null)
+        {
+            Node a = _nodes[copy.From.ID];
+            Connection c;
+            if (copy2 == null)
+                c = new Connection(a, _nodes[copy.To.ID], copy);
+            else
+                c = new Connection(a, _nodes[copy.To.ID], copy, copy2);
+            _connections.Add(c.Innovation, c);
+            a.AddConnection(c);
         }
 
         /// <summary>

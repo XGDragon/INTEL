@@ -8,8 +8,6 @@ namespace INTEL
 {
     class Algorithm
     {
-        public static Random R { get; private set; }
-
         public Problem[] Problem { get; private set; }
         public decimal MaxFitness { get; private set; }
 
@@ -21,8 +19,6 @@ namespace INTEL
 
         public Algorithm(ProblemFactory pf)
         {
-            R = new Random();
-
             pf.Initialize();
             Problem = pf.Create();
             MaxFitness = pf.MaxFitness;
@@ -58,10 +54,10 @@ namespace INTEL
                 {
                     //at initialization, we need not worry about c1,c2, because there are no disjoint or excess connections
                     decimal weightDifferenceTotal = 0;
-                    for (int j = 0; j < Population[i].Connections.Count; j++)
-                        weightDifferenceTotal += Math.Abs(Population[i].Connections[j] - Species[index_species].Representative.Connections[j]);
+                    for (int j = 0; j < Population[i].Nodes.Connections.Count; j++)
+                        weightDifferenceTotal += Math.Abs(Population[i].Nodes.Connections[j] - Species[index_species].Representative.Nodes.Connections[j]);
 
-                    decimal distance = (Parameter.c3 * weightDifferenceTotal) / Population[i].Connections.Count;
+                    decimal distance = (Parameter.c3 * weightDifferenceTotal) / Population[i].Nodes.Connections.Count;
                     if (distance < Parameter.SpeciationThreshold)
                     {
                         Species[index_species].Add(Population[i]);
@@ -126,7 +122,7 @@ namespace INTEL
 
                 while (crossovers-- > 0)
                 {
-                    if ((decimal)R.NextDouble() < Parameter.CrossoverInterspecies)
+                    if (Program.R.NextDecimal() < Parameter.CrossoverInterspecies)
                     {
                         //CrossoverInterspecies
                     }

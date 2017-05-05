@@ -18,10 +18,10 @@ namespace INTEL
         private decimal _input = 0;
         public virtual decimal Input { get { return (NodeType == Type.Bias) ? BIAS_INPUT : _input; } set { _input = value; } }
         public decimal Output { get; protected set; }
-
-        private List<Connection> _connections = new List<Connection>();
-
-        public Node(int id, Type type)
+        
+        private Dictionary<Node, Connection> _connections = new Dictionary<Node, Connection>();
+        
+        public Node(int id, Type type) 
         {
             ID = id;
             NodeType = type;
@@ -33,11 +33,14 @@ namespace INTEL
             NodeType = copy.NodeType;            
         }
 
-        public Connection Connect(Node target)
+        public bool IsConnected(Node target)
         {
-            Connection c = new Connection(this, target);
-            _connections.Add(c);
-            return c;
+            return _connections.ContainsKey(target);
+        }
+
+        public void AddConnection(Connection c)
+        {
+            _connections[c.From] = c;
         }
 
         public void Activation(Problem.ActivationFunction af)
@@ -51,7 +54,7 @@ namespace INTEL
         /// </summary>
         public void Export()
         {
-            foreach (Connection c in _connections)
+            foreach (Connection c in _connections.Values)
                 if (c.Enable)
                     c.To.Input += Output * c.Weight;
         }

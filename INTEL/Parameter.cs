@@ -17,7 +17,7 @@ namespace INTEL
 
             List.Add(this);
         }
-        
+
         public decimal Value { get; private set; }
         public string Tooltip { get; private set; }
         private string _name;
@@ -132,8 +132,10 @@ namespace INTEL
         private static Parameter _crossoverInterspecies = new Parameter("Interspecies", 0.0m, "if crossover has been selected, this probability governs the intra/interspecies parent composition being used");
         public static decimal CrossoverInterspecies { get { return _crossoverInterspecies.Value; } }
 
-        private static Parameter _crossoverMultipoint = new Parameter("Multipoint", 5, "standard-crossover in which matching connection genes are inherited randomly from both parents. In the (1-multipoint) cases, weights of the new connection genes are the mean of the corresponding parent genes");
+        private static Parameter _crossoverMultipoint = new Parameter("Multipoint", 0.6m, "standard-crossover in which matching connection genes are inherited randomly from both parents. In the (1-multipoint) cases, weights of the new connection genes are the mean of the corresponding parent genes");
         public static decimal CrossoverMultipoint { get { return _crossoverMultipoint.Value; } }
+
+        public const decimal CrossoverDisable = 0.75m; //constant?
 
         //Mutation
         private static Parameter _mutationAddNode = new Parameter("Add Node Probability", 0.03m);

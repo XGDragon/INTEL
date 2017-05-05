@@ -9,19 +9,19 @@ namespace INTEL
 {
     class Connection
     {
-        private static Dictionary<(int from, int to), uint> _connections = new Dictionary<(int from, int to), uint>();
-        private static uint _innovation = 0;
+        private static Dictionary<(int from, int to), int> _connections = new Dictionary<(int from, int to), int>();
+        private static int _innovation = 0;
         public static void Clear() { _connections.Clear(); _innovation = 0; }
 
-        public uint Innovation { get; private set; }
+        public int Innovation { get; private set; }
         public Node From { get; private set; }
         public Node To { get; private set; }
         public decimal Weight { get; private set; }
-        public bool Enable { get; private set; }
-
+        public bool Enable { get; set; }
+        
         public Connection(Node from, Node to)
         {
-            uint i;
+            int i;
             if (_connections.TryGetValue((from.ID, to.ID), out i))
                 Innovation = i;
             else
@@ -32,8 +32,36 @@ namespace INTEL
 
             From = from;
             To = to;
-            Weight = ((decimal)Algorithm.R.NextDouble() * Parameter.MutationInitWeightRange) - (Parameter.MutationInitWeightRange / 2);
+            Weight = (Program.R.NextDecimal() * Parameter.MutationInitWeightRange) - (Parameter.MutationInitWeightRange / 2);
             Enable = true;
+        }
+
+        public Connection(Node from, Node to, Connection copy)
+        {
+            Innovation = copy.Innovation;
+            From = from;
+            To = to;
+            Weight = copy.Weight;
+            Enable = copy.Enable;
+        }
+
+        public Connection(Node from, Node to, Connection copy1, Connection copy2)
+        {
+            Innovation = copy1.Innovation;
+            From = from;
+            To = to;
+
+            if (Program.R.NextDecimal() < Parameter.CrossoverMultipoint)
+                Weight = (copy1.Weight + copy2.Weight) / 2;
+            else
+            {
+                Weight = (Program.R.NextDouble() < 0.5) ? copy1.Weight : copy2.Weight;
+            }
+
+            if (copy1.Enable && copy2.Enable)
+                Enable = true;
+            else
+                Enable = (!copy1.Enable && !copy2.Enable) ? false : (Program.R.NextDecimal() > Parameter.CrossoverDisable);
         }
 
         public override string ToString()

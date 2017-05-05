@@ -11,7 +11,6 @@ namespace INTEL
     {
         //candidates for privatization
         public NodeCollection Nodes { get; private set; }
-        public List<Connection> Connections = new List<Connection>();
         
         public decimal Fitness { get; private set; }
         public Species MemberOf { get; set; }
@@ -24,23 +23,20 @@ namespace INTEL
             Nodes.Add(new Node(1, Node.Type.Bias));
             for (int i = 0; i < Parameter.MaxInputNodes; i++)
                 Nodes.Add(new Node(i + 2, Node.Type.Input));
-            //no hidden in initialization
 
-            Connections.Add(Nodes[1].Connect(Nodes[0]));
+            Nodes.Connect(Nodes[1], Nodes[0]);
             for (int i = 0; i < Parameter.InputNodes && i < Parameter.MaxInputNodes; i++)
-                Connections.Add(Nodes[i + 2].Connect(Nodes[0]));
+                Nodes.Connect(Nodes[i + 2], (Nodes[0]));            
         }
 
         public Genome(Genome mutate)
         {
-            Nodes = new NodeCollection(mutate.Nodes);
-            //connect nodes, condition at line 148: size(parent2.nodegenes,2) > 4 & size(parent1.nodegenes,2) > 4 & size(parent2.nodegenes,2) ~= size(parent1.nodegenes,2)
+            Nodes = new NodeCollection(mutate);
         }
 
         public Genome(Genome parent1, Genome parent2)
         {
-            Nodes = new NodeCollection(parent1.Nodes, parent2.Nodes);
-            //need to connect nodes; need to find matching/disjoint/excess. perhaps by going node by node?
+            Nodes = new NodeCollection(parent1, parent2);
         }
 
         public void EvaluateFitness(Problem[] problems)
@@ -61,7 +57,7 @@ namespace INTEL
                     int no_change_count = 0;
                     int index_loop = 0;
 
-                    while (no_change_count < Nodes.Count && index_loop < 3 * Connections.Count)
+                    while (no_change_count < Nodes.Count && index_loop < 3 * Nodes.Connections.Count)
                     {
                         index_loop++;
                         decimal[] old_outputs = Nodes.AllOutputs();
@@ -101,47 +97,8 @@ namespace INTEL
             else return 0;
         }
 
-
-
         public static bool operator >(Genome a, Genome b) { return a.Fitness > b.Fitness; }
         public static bool operator <(Genome a, Genome b) { return a.Fitness < b.Fitness; }
-
-        public class ConnectionComparison
-        {
-            public ConnectionComparison(Genome a, Genome b)
-            {
-
-            }
-        }
         
-        //public class Comparison
-        //{
-        //    public enum Group { Matching, Disjoint, Excess }
-        //    public enum Type { Stronger, Weaker }
-
-        //    private Dictionary<Type, Dictionary<Group, List<Connection>>> _dict = new Dictionary<Type, Dictionary<Group, List<Connection>>>();
-
-        //    private Genome _stronger { get { return (_a > _b) ? _a : _b; } }
-        //    private Genome _weaker { get { return (_a > _b) ? _b : _a; } }
-            
-        //    private Genome _a;
-        //    private Genome _b;
-
-        //    private List<Connection> _matching;
-        //    private List<Connection> _disjoint;
-        //    private List<Connection> _excess;       
-
-        //    public Comparison(Genome a, Genome b)
-        //    {
-        //        _a = a;
-        //        _b = b;
-
-        //        List<Connection> larger = (a.Connections.Count > b.Connections.Count) ? a.Connections : b.Connections;
-        //    }
-
-        //    public List<Connection> Get(Type t, Group g) { return _dict[t][g]; }
-
-            
-        //}
     }
 }
