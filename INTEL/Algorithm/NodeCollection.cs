@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace INTEL
 {
-    class NodeCollection
+    class NodeCollection : ICollection<Node>
     {
         private Dictionary<int, Node> _nodesDict = new Dictionary<int, Node>();
         private List<Node> _nodesList = new List<Node>();
@@ -20,7 +20,7 @@ namespace INTEL
         private Dictionary<int, Connection> _connections = new Dictionary<int, Connection>();
         public IReadOnlyDictionary<int, Connection> Connections { get { return _connections; } }
 
-        public Node this[int i] { get { return _nodesList[i]; } }
+        public Node this[int i] { get { return _nodesDict[i]; } }
 
         public NodeCollection() { }
         
@@ -30,21 +30,23 @@ namespace INTEL
         public NodeCollection(Genome copy) 
         {
             for (int i = 0; i < copy.Nodes.Count; i++)
-                Create(new Node(copy.Nodes._nodesList[i]));
+                Add(new Node(copy.Nodes._nodesList[i]));
 
-            foreach (Connection c in _connections.Values)
+            foreach (Connection c in copy.Nodes._connections.Values)
                 Connect(c);
 
-            //and add connections
+            RemoveUselessHiddenNodes();
         }
 
         /// <summary>
         /// Crossover
         /// </summary>
-        public NodeCollection(Genome parent1, Genome parent2) : this(parent1)
-        {            
+        public NodeCollection(Genome parent1, Genome parent2)
+        {
+            for (int i = 0; i < parent1.Nodes.Count; i++)
+                Add(new Node(parent1.Nodes._nodesList[i]));
             for (int i = 0; i < parent2.Nodes.Count; i++)
-                Create(new Node(parent2.Nodes._nodesList[i]));
+                Add(new Node(parent2.Nodes._nodesList[i]));
             
             GenomeComparison gc = new GenomeComparison(parent1, parent2);
             List<Connection>[] cc = new List<Connection>[4]
@@ -57,36 +59,12 @@ namespace INTEL
 
             for (int i = 1; i < cc.Length; i++)
                 for (int j = 0; j < cc[i].Count; j++)
-                    if (i == 1)
+                    if (i == 1) //if 1, then its about matching connections, otherwise..
                         Connect(cc[i - 1][j], cc[i][j]);
                     else
                         Connect(cc[i][j]);
-        }
 
-        public void Create(int id, Node.Type type)
-        {
-            Create(new Node(id, type));
-        }
-
-        private void Create(Node a)
-        {
-            if (_nodesDict.ContainsKey(a.ID))
-                return;
-
-            _nodesDict.Add(a.ID, a);
-            _nodesList.Add(a);
-
-            switch (a.NodeType)
-            {
-                case Node.Type.Bias:
-                    _bias = a; break;
-                case Node.Type.Input:
-                    _inputs.Add(a); break;
-                case Node.Type.Hidden:
-                    _hidden.Add(a); break;
-                case Node.Type.Output:
-                    _outputs.Add(a); break;
-            }
+            RemoveUselessHiddenNodes();
         }
 
         public void Connect(Node a, Node b)
@@ -106,6 +84,67 @@ namespace INTEL
                 c = new Connection(a, _nodesDict[copy.To.ID], copy, copy2);
             _connections.Add(c.Innovation, c);
             a.AddConnection(c);
+        }
+
+        public void Mutate()
+        {
+            foreach (Connection c in _connections.Values)
+            {
+                c.ReEnable();
+                c.MutateWeight();
+            }
+
+            bool newConnection = Program.R.NextDecimal() < Parameter.MutationAddConnection;
+            bool newNode = Program.R.NextDecimal() < Parameter.MutationAddNode;
+
+            if (!newNode && newConnection)
+                MutateNewConnection();  //we dont add connections when adding nodes..
+            if (newNode)
+                MutateNewNode();
+        }
+
+        private void MutateNewConnection()
+        {
+            bool recurrentAllowed = Program.R.NextDecimal() < Parameter.MutationRecurrency;
+            List<(Node a, Node b)> potentialConnections = new List<(Node a, Node b)>();
+            List<Node>[] ho = new List<Node>[] { _hidden, _outputs };
+            
+            foreach (Node a in _nodesList)
+                foreach (List<Node> l in ho)
+                    foreach (Node b in l)
+                        if (!a.ConnectsTo(b))
+                            if (!(a.IsRecurrent(b) && !recurrentAllowed)) //00=1,01=1,10=0,11=1
+                                potentialConnections.Add((a, b));
+            //all nodes are eligible as 'from'
+            //only hidden and outputs and eligible as 'to'
+            var ab = potentialConnections[Program.R.Next(potentialConnections.Count)];
+            Connect(ab.a, ab.b);
+        }
+
+        private void MutateNewNode()
+        {
+            int id = _nodesDict.Keys.Max() + 1;
+            Node n = new Node(id, Node.Type.Hidden);
+            Add(n);
+
+            //all node to nodes are eligible where the connection is enabled
+            var eligible = _connections.Values.Where(c => { return c.Enable; });
+            int count = eligible.Count();
+            if (count > 0)
+            {
+                Connection cut = eligible.ElementAt(Program.R.Next(count));
+                Connect(cut.From, n);
+                Connect(n, cut.To);
+                cut.Enable = false;
+            }
+        }
+
+        private void RemoveUselessHiddenNodes()
+        {
+            _hidden.RemoveAll(h =>
+            {
+                return _nodesList.TrueForAll(n => { return !n.ConnectsTo(h); });
+            });
         }
 
         /// <summary>
@@ -163,11 +202,81 @@ namespace INTEL
             return d;
         }
 
-        public Node ID(int id)
+        #region ICollection implementation
+        public void Add(Node a)
         {
-            return _nodesDict[id];
+            if (_nodesDict.ContainsKey(a.ID))
+                return;
+
+            _nodesDict.Add(a.ID, a);
+            _nodesList.Add(a);
+
+            switch (a.NodeType)
+            {
+                case Node.Type.Bias:
+                    _bias = a; break;
+                case Node.Type.Input:
+                    _inputs.Add(a); break;
+                case Node.Type.Hidden:
+                    _hidden.Add(a); break;
+                case Node.Type.Output:
+                    _outputs.Add(a); break;
+            }
+        }
+
+        public void Clear()
+        {
+            _nodesDict.Clear();
+            _nodesList.Clear();
+
+            _bias = null;
+            _inputs.Clear();
+            _hidden.Clear();
+            _outputs.Clear();
+        }
+
+        public bool Contains(Node item)
+        {
+            return _nodesList.Contains(item);
+        }
+
+        public void CopyTo(Node[] array, int arrayIndex)
+        {
+            _nodesList.CopyTo(array, arrayIndex);
+        }
+
+        public bool Remove(Node a)
+        {
+            _nodesDict.Remove(a.ID);
+
+            switch (a.NodeType)
+            {
+                case Node.Type.Bias:
+                    _bias = null; break;
+                case Node.Type.Input:
+                    _inputs.Remove(a); ; break;
+                case Node.Type.Hidden:
+                    _hidden.Remove(a); break;
+                case Node.Type.Output:
+                    _outputs.Remove(a); break;
+            }
+
+            return _nodesList.Remove(a);
+        }
+
+        public IEnumerator<Node> GetEnumerator()
+        {
+            return _nodesList.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return _nodesList.GetEnumerator();
         }
 
         public int Count { get { return _nodesList.Count; } }
+
+        public bool IsReadOnly => ((ICollection<Node>)_nodesList).IsReadOnly;
+        #endregion
     }
 }

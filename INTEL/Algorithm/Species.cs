@@ -38,6 +38,11 @@ namespace INTEL
             return _members.Max();
         }
 
+        public Genome RandomGenome()
+        {
+            return _members[Program.R.Next(_members.Count)];
+        }
+
         public void UpdateData(int generation)
         {
             CurrentData = new Data(this, generation);

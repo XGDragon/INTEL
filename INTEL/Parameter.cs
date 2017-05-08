@@ -153,8 +153,8 @@ namespace INTEL
         private static Parameter _mutationMaxWeightRange = new Parameter("Weight Cap", 8, "weights will be restricted from -weight_cap to +weight_cap");
         public static decimal MutationMaxWeightRange { get { return _mutationMaxWeightRange.Value; } }
 
-        private static Parameter _mutationInitWeightRange = new Parameter("Weight Initialization Range", 5, "random distribution with width mutation.weight_range, centered on 0. mutation range of 5 will give random distribution from -2.5 to 2.5");
-        public static decimal MutationInitWeightRange { get { return _mutationInitWeightRange.Value; } }
+        private static Parameter _mutationWeightRange = new Parameter("Weight Range", 5, "random distribution with width mutation.weight_range, centered on 0. mutation range of 5 will give random distribution from -2.5 to 2.5");
+        public static decimal MutationWeightRange { get { return _mutationWeightRange.Value; } }
 
         private static Parameter _mutationReEnable = new Parameter("Node Re-enable Probability", 0.25m, "Probability of a connection gene being reenabled in offspring if it was inherited disabled");
         public static decimal MutationReEnable { get { return _mutationReEnable.Value; } }

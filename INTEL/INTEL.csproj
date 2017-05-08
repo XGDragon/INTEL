@@ -58,7 +58,9 @@
     <Compile Include="Algorithm\Node.cs" />
     <Compile Include="Algorithm\NodeCollection.cs" />
     <Compile Include="Algorithm\Problems\ProblemFactory.cs" />
+    <Compile Include="Algorithm\Problems\IPDProblem.cs" />
     <Compile Include="Algorithm\Problems\XORProblem.cs" />
+    <Compile Include="Algorithm\Problems\IPDProblemFactory.cs" />
     <Compile Include="Algorithm\Problems\XORProblemFactory.cs" />
     <Compile Include="Algorithm\Species.cs" />
     <Compile Include="Console.cs" />
