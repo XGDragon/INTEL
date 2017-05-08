@@ -52,12 +52,8 @@ namespace INTEL
 
                 while (!assigned_existing_species && !new_species)
                 {
-                    //at initialization, we need not worry about c1,c2, because there are no disjoint or excess connections
-                    decimal weightDifferenceTotal = 0;
-                    for (int j = 0; j < Population[i].Nodes.Connections.Count; j++)
-                        weightDifferenceTotal += Math.Abs(Population[i].Nodes.Connections[j] - Species[index_species].Representative.Nodes.Connections[j]);
-
-                    decimal distance = (Parameter.c3 * weightDifferenceTotal) / Population[i].Nodes.Connections.Count;
+                    GenomeComparison gc = new GenomeComparison(Population[i], Species[index_species].Representative);
+                    decimal distance = (Parameter.c3 * gc.W) / Population[i].Nodes.Connections.Count;
                     if (distance < Parameter.SpeciationThreshold)
                     {
                         Species[index_species].Add(Population[i]);

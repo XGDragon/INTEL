@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 
 namespace INTEL
 {
-    class NodeCollection : ICollection<Node>
+    class NodeCollection
     {
-        private Dictionary<int, Node> _nodes = new Dictionary<int, Node>();
-        private List<Node> __nodes = new List<Node>();
+        private Dictionary<int, Node> _nodesDict = new Dictionary<int, Node>();
+        private List<Node> _nodesList = new List<Node>();
 
         private Node _bias;
         private List<Node> _inputs = new List<Node>();
@@ -20,7 +20,7 @@ namespace INTEL
         private Dictionary<int, Connection> _connections = new Dictionary<int, Connection>();
         public IReadOnlyDictionary<int, Connection> Connections { get { return _connections; } }
 
-        public Node this[int i] { get { return _nodes[i]; } }
+        public Node this[int i] { get { return _nodesList[i]; } }
 
         public NodeCollection() { }
         
@@ -30,7 +30,7 @@ namespace INTEL
         public NodeCollection(Genome copy) 
         {
             for (int i = 0; i < copy.Nodes.Count; i++)
-                Add(new Node(copy.Nodes.__nodes[i]));
+                Create(new Node(copy.Nodes._nodesList[i]));
 
             foreach (Connection c in _connections.Values)
                 Connect(c);
@@ -44,7 +44,7 @@ namespace INTEL
         public NodeCollection(Genome parent1, Genome parent2) : this(parent1)
         {            
             for (int i = 0; i < parent2.Nodes.Count; i++)
-                Add(new Node(parent2.Nodes.__nodes[i]));
+                Create(new Node(parent2.Nodes._nodesList[i]));
             
             GenomeComparison gc = new GenomeComparison(parent1, parent2);
             List<Connection>[] cc = new List<Connection>[4]
@@ -63,6 +63,32 @@ namespace INTEL
                         Connect(cc[i][j]);
         }
 
+        public void Create(int id, Node.Type type)
+        {
+            Create(new Node(id, type));
+        }
+
+        private void Create(Node a)
+        {
+            if (_nodesDict.ContainsKey(a.ID))
+                return;
+
+            _nodesDict.Add(a.ID, a);
+            _nodesList.Add(a);
+
+            switch (a.NodeType)
+            {
+                case Node.Type.Bias:
+                    _bias = a; break;
+                case Node.Type.Input:
+                    _inputs.Add(a); break;
+                case Node.Type.Hidden:
+                    _hidden.Add(a); break;
+                case Node.Type.Output:
+                    _outputs.Add(a); break;
+            }
+        }
+
         public void Connect(Node a, Node b)
         {
             Connection c = new Connection(a, b);
@@ -72,12 +98,12 @@ namespace INTEL
 
         private void Connect(Connection copy, Connection copy2 = null)
         {
-            Node a = _nodes[copy.From.ID];
+            Node a = _nodesDict[copy.From.ID];
             Connection c;
             if (copy2 == null)
-                c = new Connection(a, _nodes[copy.To.ID], copy);
+                c = new Connection(a, _nodesDict[copy.To.ID], copy);
             else
-                c = new Connection(a, _nodes[copy.To.ID], copy, copy2);
+                c = new Connection(a, _nodesDict[copy.To.ID], copy, copy2);
             _connections.Add(c.Innovation, c);
             a.AddConnection(c);
         }
@@ -120,9 +146,9 @@ namespace INTEL
         /// </summary>
         public decimal[] AllOutputs()
         {
-            decimal[] d = new decimal[__nodes.Count];
-            for (int i = 0; i < __nodes.Count; i++)
-                d[i] = __nodes[i].Output;
+            decimal[] d = new decimal[_nodesList.Count];
+            for (int i = 0; i < _nodesList.Count; i++)
+                d[i] = _nodesList[i].Output;
             return d;
         }
 
@@ -137,81 +163,11 @@ namespace INTEL
             return d;
         }
 
-        #region ICollection implementation
-        public void Add(Node a)
+        public Node ID(int id)
         {
-            if (_nodes.ContainsKey(a.ID))
-                return;
-
-            _nodes.Add(a.ID, a);
-            __nodes.Add(a);
-
-            switch (a.NodeType)
-            {
-                case Node.Type.Bias:
-                    _bias = a; break;
-                case Node.Type.Input:
-                    _inputs.Add(a); break;
-                case Node.Type.Hidden:
-                    _hidden.Add(a); break;
-                case Node.Type.Output:
-                    _outputs.Add(a); break;
-            }
+            return _nodesDict[id];
         }
 
-        public void Clear()
-        {
-            _nodes.Clear();
-            __nodes.Clear();
-
-            _bias = null;
-            _inputs.Clear();
-            _hidden.Clear();
-            _outputs.Clear();
-        }
-
-        public bool Contains(Node item)
-        {
-            return __nodes.Contains(item);
-        }
-
-        public void CopyTo(Node[] array, int arrayIndex)
-        {
-            __nodes.CopyTo(array, arrayIndex);
-        }
-
-        public bool Remove(Node a)
-        {
-            _nodes.Remove(a.ID);
-
-            switch (a.NodeType)
-            {
-                case Node.Type.Bias:
-                    _bias = null; break;
-                case Node.Type.Input:
-                    _inputs.Remove(a); ; break;
-                case Node.Type.Hidden:
-                    _hidden.Remove(a); break;
-                case Node.Type.Output:
-                    _outputs.Remove(a); break;
-            }
-
-            return __nodes.Remove(a);
-        }
-
-        public IEnumerator<Node> GetEnumerator()
-        {
-            return __nodes.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return __nodes.GetEnumerator();
-        }
-
-        public int Count { get { return __nodes.Count; } }
-
-        public bool IsReadOnly => ((ICollection<Node>)__nodes).IsReadOnly;
-        #endregion
+        public int Count { get { return _nodesList.Count; } }
     }
 }

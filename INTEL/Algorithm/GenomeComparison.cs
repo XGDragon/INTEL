@@ -29,7 +29,7 @@ namespace INTEL
         {
             for (int i = 0; i < 2; i++)
                 for (int j = 0; j < 3; j++)
-                    _connections[2, 3] = new List<Connection>();
+                    _connections[i, j] = new List<Connection>();
 
             _stronger = (a > b) ? a : b;
             _weaker = (a > b) ? b : a;

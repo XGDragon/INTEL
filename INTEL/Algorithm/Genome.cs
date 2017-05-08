@@ -19,10 +19,10 @@ namespace INTEL
         {
             Nodes = new NodeCollection();
 
-            Nodes.Add(new Node(0, Node.Type.Output));
-            Nodes.Add(new Node(1, Node.Type.Bias));
+            Nodes.Create(0, Node.Type.Output);
+            Nodes.Create(1, Node.Type.Bias);
             for (int i = 0; i < Parameter.MaxInputNodes; i++)
-                Nodes.Add(new Node(i + 2, Node.Type.Input));
+                Nodes.Create(i + 2, Node.Type.Input);
 
             Nodes.Connect(Nodes[1], Nodes[0]);
             for (int i = 0; i < Parameter.InputNodes && i < Parameter.MaxInputNodes; i++)
@@ -98,7 +98,6 @@ namespace INTEL
         }
 
         public static bool operator >(Genome a, Genome b) { return a.Fitness > b.Fitness; }
-        public static bool operator <(Genome a, Genome b) { return a.Fitness < b.Fitness; }
-        
+        public static bool operator <(Genome a, Genome b) { return a.Fitness < b.Fitness; }        
     }
 }

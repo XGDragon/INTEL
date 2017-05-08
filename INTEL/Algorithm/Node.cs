@@ -27,10 +27,9 @@ namespace INTEL
             NodeType = type;
         }
 
-        public Node(Node copy)
+        public Node(Node copy) : this(copy.ID, copy.NodeType)
         {
-            ID = copy.ID;
-            NodeType = copy.NodeType;            
+            
         }
 
         public bool IsConnected(Node target)
