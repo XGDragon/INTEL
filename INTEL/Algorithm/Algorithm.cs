@@ -111,26 +111,28 @@ namespace INTEL
 
                 s.ShuffleRepresentative();
             }
-
+            
             foreach (Species s in Species)
             {
                 int overall = s.Offspring - ((s.Elite) ? 1 : 0);
                 int crossovers = (int)Math.Round(overall * Parameter.CrossoverPercentage);
                 int mutations = overall - crossovers;
-                var selected = s.Select(crossovers, mutations);
+                Genome[] selected = s.Select(crossovers, mutations);
                 int parent = 0;
 
                 while (crossovers-- > 0)
                 {
-                    if (Program.R.NextDecimal() < Parameter.CrossoverInterspecies)
+                    if (Program.R.NextDecimal() < Parameter.CrossoverInterspecies && Species.Count > 1)
                     {
                         //CrossoverInterspecies
+                        int[] q = new int[Species.Count - 1];
+                        int x = 0;
+                        for (int i = 0; i < q.Length; i++)
+                            if (Species[i] != s)
+                                q[x] = x++;
+                        selected[parent] = Species[q[Program.R.Next(q.Length)]].RandomGenome(); //replace picked with a random one from a different species
                     }
-                    else
-                    {
-                        //Crossover within Species
-                        newPopulation.Add(new Genome(selected[parent++], selected[parent++]));
-                    }
+                    newPopulation.Add(new Genome(selected[parent++], selected[parent++]));
                 }
 
                 while (mutations-- > 0)

@@ -18,24 +18,32 @@ namespace INTEL
         private decimal _input = 0;
         public virtual decimal Input { get { return (NodeType == Type.Bias) ? BIAS_INPUT : _input; } set { _input = value; } }
         public decimal Output { get; protected set; }
+        public decimal Depth { get; set; }
         
+        //outgoing connections
         private Dictionary<Node, Connection> _connections = new Dictionary<Node, Connection>();
         
         public Node(int id, Type type) 
         {
             ID = id;
             NodeType = type;
+            Depth = (type == Type.Output) ? 1 : 0;
         }
 
-        public Node(Node copy)
+        public Node(Node copy) : this(copy.ID, copy.NodeType)
         {
-            ID = copy.ID;
-            NodeType = copy.NodeType;            
+            Depth = copy.Depth;
         }
 
-        public bool IsConnected(Node target)
+        public bool ConnectsTo(Node target)
         {
             return _connections.ContainsKey(target);
+        }
+
+        public bool IsRecurrent(Node target)
+        {
+            return (target == this);
+            //too complicated for now..
         }
 
         public void AddConnection(Connection c)

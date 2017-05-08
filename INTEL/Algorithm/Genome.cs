@@ -32,11 +32,13 @@ namespace INTEL
         public Genome(Genome mutate)
         {
             Nodes = new NodeCollection(mutate);
+            Nodes.Mutate();
         }
 
         public Genome(Genome parent1, Genome parent2)
         {
             Nodes = new NodeCollection(parent1, parent2);
+            Nodes.Mutate();
         }
 
         public void EvaluateFitness(Problem[] problems)
@@ -65,10 +67,7 @@ namespace INTEL
                             Nodes[j].Export();
 
                         Nodes.Activate(p.Activation, Node.Type.Hidden, Node.Type.Output);
-
-                        //no_change_count=sum(abs(population(index_individual).nodegenes(4,:)-vector_node_state)<no_change_threshold); 
-                        //%check for all nodes where the node output state has changed by less than no_change_threshold since last 
-                        //iteration through all the connection genes
+                        
                         decimal[] new_outputs = Nodes.AllOutputs();
                         for (int j = 0; j < old_outputs.Length; j++)
                             no_change_count += (Math.Abs(new_outputs[j] - old_outputs[j]) < Problem.NO_CHANGE_THRESHOLD) ? 1 : 0;

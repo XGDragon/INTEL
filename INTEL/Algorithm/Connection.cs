@@ -32,7 +32,7 @@ namespace INTEL
 
             From = from;
             To = to;
-            Weight = (Program.R.NextDecimal() * Parameter.MutationInitWeightRange) - (Parameter.MutationInitWeightRange / 2);
+            Weight = (Program.R.NextDecimal() * Parameter.MutationWeightRange) - (Parameter.MutationWeightRange / 2);
             Enable = true;
         }
 
@@ -62,6 +62,21 @@ namespace INTEL
                 Enable = true;
             else
                 Enable = (!copy1.Enable && !copy2.Enable) ? false : (Program.R.NextDecimal() > Parameter.CrossoverDisable);
+        }
+
+        public void ReEnable()
+        {
+            if (!Enable)
+                Enable = (Program.R.NextDecimal() < Parameter.MutationReEnable);
+        }
+
+        public void MutateWeight()
+        {
+            if (Program.R.NextDecimal() < Parameter.MutationChangeWeight)
+                Weight =
+                    Math.Max(-Parameter.MutationMaxWeightRange,
+                        Math.Min(Parameter.MutationMaxWeightRange,
+                            Weight + Parameter.MutationWeightRange * (Program.R.NextDecimal() - 0.5m)));
         }
 
         public override string ToString()
