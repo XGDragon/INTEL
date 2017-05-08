@@ -9,8 +9,6 @@ namespace INTEL
 {
     class Species : ICollection<Genome>, IComparable<Species>
     {
-        private static Random R = new Random();
-
         public Genome Representative { get; private set; }
         public int GenerationsExisted { get { return _data.Count; } }
         public bool EliminateSpecies { get; set; } //mean fitness to 0.01?
@@ -18,8 +16,9 @@ namespace INTEL
         public int Offspring { get; private set; }
         public bool Elite { get; set; }
 
-        private List<Genome> _members = new List<Genome>();
-        private Dictionary<int, Data> _data = new Dictionary<int, Data>();
+        private List<Genome> _offspring = new List<Genome>();
+        private List<Genome> _parents = new List<Genome>();
+        private Dictionary<int, Data> _data = new Dictionary<int, Data>();        
 
         public Species(Genome representative)
         {
@@ -28,19 +27,20 @@ namespace INTEL
             EliminateSpecies = false;
         }
 
-        public void ShuffleRepresentative()
+        public void MakeMembersSenior()
         {
-            Representative = _members[R.Next(_members.Count)];
+            _parents = _offspring;
+            Representative = _parents[Program.R.Next(_parents.Count)];
         }
 
         public Genome FittestGenome()
         {
-            return _members.Max();
+            return _parents.Max();
         }
 
-        public Genome RandomGenome()
+        public Genome RandomParent()
         {
-            return _members[Program.R.Next(_members.Count)];
+            return _parents[Program.R.Next(_parents.Count)];
         }
 
         public void UpdateData(int generation)
@@ -49,15 +49,15 @@ namespace INTEL
             _data[generation] = CurrentData;
         }
 
-        public bool CheckIfStagnant()
+        public void CheckIfStagnant()
         {
+            EliminateSpecies = false;
             if (Count > 0 && GenerationsExisted >= Parameter.StagnationGenerations)
             {
                 var a = _data.Values;
                 decimal avg = a.Average((Species.Data d) => { return d.MaxFitness; });
-                return (a.Where((Species.Data d) => { return (Math.Abs(d.MaxFitness - avg) < Parameter.StagnationThreshold); }).Count() == Parameter.StagnationGenerations);
+                EliminateSpecies = (a.Where((Species.Data d) => { return (Math.Abs(d.MaxFitness - avg) < Parameter.StagnationThreshold); }).Count() == Parameter.StagnationGenerations);
             }
-            return false;
         }
 
         public bool CheckIfRefocus()
@@ -78,22 +78,28 @@ namespace INTEL
         {
             decimal number_offspring = CurrentData.MeanFitness / globalMeanFitness * Parameter.PopulationSize;
             overflow += number_offspring - Math.Truncate(number_offspring);
-            Offspring = (int)((overflow > 1) ? Math.Ceiling(number_offspring) : Math.Floor(number_offspring));
+            if (overflow >= 1)
+            {
+                Offspring = (int)Math.Ceiling(number_offspring);
+                overflow--;
+            }
+            else
+                Offspring = (int)Math.Floor(number_offspring);
         }
 
         public void CullTheWeak()
         {
-            _members.Sort();
-            _members.RemoveRange(0, (int)Math.Floor(_members.Count * Parameter.KillPercentage));
+            _offspring.Sort();
+            _offspring.RemoveRange(0, (int)Math.Floor(_offspring.Count * Parameter.KillPercentage));
         }
 
-        public Genome[] Select(int crossoverCount, int mutationCount)
+        public Genome[] Selection(int crossoverCount, int mutationCount)
         {
             Genome[] selected = new Genome[2 * crossoverCount + mutationCount];
 
             //fully random selection lol pls edit'. ps same selection is allowed
             for (int i = 0; i < selected.Length; i++)
-                selected[i] = _members[R.Next(_members.Count)];
+                selected[i] = _offspring[Program.R.Next(_offspring.Count)];
 
             return selected;
         }
@@ -111,46 +117,46 @@ namespace INTEL
         public void Add(Genome g)
         {
             if (g.MemberOf != null)
-                g.MemberOf._members.Remove(g);
+                g.MemberOf._offspring.Remove(g);
 
             g.MemberOf = this;
-            g.MemberOf._members.Add(g);
+            g.MemberOf._offspring.Add(g);
         }
 
         public void Clear()
         {
-            ((ICollection<Genome>)_members).Clear();
+            ((ICollection<Genome>)_offspring).Clear();
         }
 
         public bool Contains(Genome item)
         {
-            return ((ICollection<Genome>)_members).Contains(item);
+            return ((ICollection<Genome>)_offspring).Contains(item);
         }
 
         public void CopyTo(Genome[] array, int arrayIndex)
         {
-            ((ICollection<Genome>)_members).CopyTo(array, arrayIndex);
+            ((ICollection<Genome>)_offspring).CopyTo(array, arrayIndex);
         }
 
         public bool Remove(Genome g)
         {
             g.MemberOf = null;
-            return ((ICollection<Genome>)_members).Remove(g);
+            return ((ICollection<Genome>)_offspring).Remove(g);
         }
 
         public IEnumerator<Genome> GetEnumerator()
         {
-            return ((ICollection<Genome>)_members).GetEnumerator();
+            return ((ICollection<Genome>)_offspring).GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return ((ICollection<Genome>)_members).GetEnumerator();
+            return ((ICollection<Genome>)_offspring).GetEnumerator();
         }
 
-        public int Count => ((ICollection<Genome>)_members).Count;
+        public int Count => ((ICollection<Genome>)_offspring).Count;
 
-        public bool IsReadOnly => ((ICollection<Genome>)_members).IsReadOnly;
+        public bool IsReadOnly => ((ICollection<Genome>)_offspring).IsReadOnly;
         #endregion
         
         public struct Data : IComparable<Data>
@@ -164,10 +170,10 @@ namespace INTEL
             {
                 Generation = generation;
 
-                if (s._members.Count > 0)
+                if (s._offspring.Count > 0)
                 {
-                    MeanFitness = s._members.Average((Genome g) => { return g.Fitness; });
-                    Genome f = s._members.Max();
+                    MeanFitness = s._offspring.Average((Genome g) => { return g.Fitness; });
+                    Genome f = s._offspring.Max();
                     MaxFitness = f.Fitness;
                     FittestGenome = f;
                 }

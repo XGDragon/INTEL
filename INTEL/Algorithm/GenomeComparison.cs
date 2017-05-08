@@ -20,13 +20,17 @@ namespace INTEL
         
         private List<Connection>[,] _connections = new List<Connection>[2, 3];
 
-        public decimal W { get; private set; }
-        public int TotalDisjoint { get; private set; }
-        public int TotalExcess { get; private set; }
-        public int N { get; private set; } //what is this
+        private int _excess = 0;
+        private int _disjoint = 0;
+        private decimal _w = 0;
+        private int _n = 0;
+
+        public decimal Distance { get; private set; }
 
         public GenomeComparison(Genome a, Genome b)
         {
+            _n = Math.Max(a.Nodes.Connections.Count, b.Nodes.Connections.Count);
+
             for (int i = 0; i < 2; i++)
                 for (int j = 0; j < 3; j++)
                     _connections[i, j] = new List<Connection>();
@@ -48,7 +52,7 @@ namespace INTEL
                 {
                     Add(Stronger, Matching, s[i]);
                     Add(Weaker, Matching, w[i]);
-                    W += Math.Abs(s[i].Weight - w[i].Weight);
+                    _w += Math.Abs(s[i].Weight - w[i].Weight);
                 }
                 else
                 {
@@ -60,16 +64,21 @@ namespace INTEL
                 }
             }
 
-            W /= _connections[0, Matching].Count;
+            decimal e = (Parameter.c1 * _excess) / _n;
+            decimal d = (Parameter.c2 * _disjoint) / _n;
+            Distance = e + d + (Parameter.c3 * _w);
         }
 
         private void Add(uint type, uint group, Connection c)
         {
             _connections[type, group].Add(c);
-            if (group == Disjoint)
-                TotalDisjoint++;
-            if (group == Excess)
-                TotalExcess++;
+            switch (group)
+            {
+                case Disjoint:
+                    _disjoint++; break;
+                case Excess:
+                    _excess++; break;
+            }
         }
 
         public List<Connection> this[uint i, uint j] { get { return _connections[i, j]; } }
