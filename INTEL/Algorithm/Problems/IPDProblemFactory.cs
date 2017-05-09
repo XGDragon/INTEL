@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace INTEL
 {
-    class IPDProblemFactory : ProblemFactory
+    public class IPDProblemFactory : ProblemFactory
     {
         public override string Name { get { return "IPD Problem"; } }
 

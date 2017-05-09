@@ -66,7 +66,6 @@
     <Compile Include="Algorithm\Problems\IPDProblemFactory.cs" />
     <Compile Include="Algorithm\Problems\XORProblemFactory.cs" />
     <Compile Include="Algorithm\Species.cs" />
-    <Compile Include="Console.cs" />
     <Compile Include="DataVisual.cs">
       <SubType>Form</SubType>
     </Compile>

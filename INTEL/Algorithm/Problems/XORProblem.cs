@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace INTEL
 {
-    class XORProblem : Problem
+    public class XORProblem : Problem
     {
         private int _patternEnumerator = 0;
 

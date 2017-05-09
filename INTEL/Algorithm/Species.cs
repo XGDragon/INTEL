@@ -8,14 +8,18 @@ using MathNet.Numerics.LinearAlgebra;
 
 namespace INTEL
 {
-    class Species : IComparable<Species>
+    public class Species : IComparable<Species>
     {
+        private static int _id = 0;
+
         public Genome Representative { get; private set; }
         public int GenerationsExisted { get { return _snapshots.Count; } }
         public Snapshot CurrentSnapshot { get; private set; }
         public int AllowedOffspring { get; private set; }
         public bool Elite { get { return (AllowedOffspring > 0 && _parents.Count > Parameter.ElitismThreshold); } }
         public int ParentCount { get { return _parents.Count; } }
+        public int OffspringCount { get { return _offspring.Count; } }
+        public int ID { get; private set; }
 
         private List<Genome> _offspring = new List<Genome>();   //before fitness evaluations
         private List<Genome> _parents = new List<Genome>();     //after fitness evaluations
@@ -24,6 +28,7 @@ namespace INTEL
 
         public Species(Genome representative)
         {
+            ID = _id++;
             AddOffspring(representative);
             Representative = representative;
         }

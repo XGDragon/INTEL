@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace INTEL
 {
-    class XORProblemFactory : ProblemFactory
+    public class XORProblemFactory : ProblemFactory
     {
         public override string Name { get { return "XOR Problem"; } }
 

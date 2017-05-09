@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace INTEL
 {
-    class NodeCollection : ICollection<Node>
+    public class NodeCollection : ICollection<Node>
     {
         private Dictionary<int, Node> _nodesDict = new Dictionary<int, Node>();
         private List<Node> _nodesList = new List<Node>();

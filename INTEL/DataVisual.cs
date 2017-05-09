@@ -12,9 +12,17 @@ namespace INTEL
 {
     public partial class DataVisual : Form
     {
-        public DataVisual()
+        private Algorithm _algorithm;
+
+        public DataVisual(Algorithm a)
         {
+            _algorithm = a;
             InitializeComponent();
+        }
+
+        public void AlgorithmUpdated()
+        {
+            label1.Text = _algorithm.Generation.ToString();
         }
     }
 }

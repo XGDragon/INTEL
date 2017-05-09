@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace INTEL
 {
-    class Node
+    public class Node
     {
         private const double BIAS_INPUT = 1;
 

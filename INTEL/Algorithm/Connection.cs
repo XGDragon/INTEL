@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace INTEL
 {
-    class Connection
+    public class Connection
     {
         private static Dictionary<(int from, int to), int> _connections = new Dictionary<(int from, int to), int>();
         private static int _innovation = 0;

@@ -6,41 +6,44 @@ using System.Threading.Tasks;
 
 namespace INTEL
 {
-    class Algorithm
+    public class Algorithm
     {
+        public List<Species> Species { get; private set; }
         public Problem[] Problem { get; private set; }
-        public double MaxFitness { get; private set; }
-        
-        public List<Species> Species = new List<Species>();
-        
+        public double MaxFitness { get; private set; }             
         public int Generation { get; private set; }
+        public int MaxGenerations { get; private set; }
         public Genome Fittest { get; private set; }
+        
+        public event EventHandler GenerationComplete;
 
-        public Algorithm(ProblemFactory pf)
+        public Algorithm(ProblemFactory pf, int maxGenerations)
         {
             pf.Initialize();
             Problem = pf.Create();
             MaxFitness = pf.MaxFitness;
+            MaxGenerations = maxGenerations;
         }
 
-        public void Run(int maxGenerations)
+        public void Run()
         {
-            Initialize();
-            AnnounceFittestGenome();
-
-            while (Generation++ < maxGenerations) //best fitness < maxfitness, otherwise stop
+            InitializeRun();
+            while (MaxGenerations == 0 || Generation++ < MaxGenerations) //best fitness < maxfitness, otherwise stop
             {
-                AnnounceFittestGenome();
                 NextGeneration();
+                ReportGeneration();
             }
         }
 
-        private void AnnounceFittestGenome()
+        private void ReportGeneration()
         {
-            Console.WriteLine("Generation " + Generation + ": Top fitness is at " + Fittest.Fitness);
+            if (Fittest != null)
+                Console.WriteLine("Generation " + Generation + ": Top fitness is at " + Fittest.Fitness);
+
+            GenerationComplete(this, EventArgs.Empty);
         }
 
-        private void Initialize()
+        private void InitializeRun()
         {
             //Initial Population
             List<Genome> initialPopulation = new List<Genome>();
@@ -48,6 +51,7 @@ namespace INTEL
                 initialPopulation.Add(new Genome());
 
             //Speciate
+            Species = new List<INTEL.Species>();
             foreach (Genome g in initialPopulation)
             {
                 var match = Species.Find(s => { return (new GenomeComparison(g, s.Representative).Distance < Parameter.SpeciationThreshold); });
@@ -83,11 +87,11 @@ namespace INTEL
             Species.RemoveAll((Species s) => { return s.ParentCount == 0; }); //remove empty species
 
             //Get offspring counts
-            double avgFitnessAllSpecies = Species.Average((Species s) => { return s.CurrentSnapshot.MeanFitness; });
+            double sumMeanFitnesses = Species.Sum((Species s) => { return s.CurrentSnapshot.MeanFitness; });
             double overflow = 0;
             foreach (Species s in Species)
             {
-                s.CalculateOffspring(ref overflow, avgFitnessAllSpecies); //WRONG VALUE
+                s.CalculateOffspring(ref overflow, sumMeanFitnesses);
                 if (s.Elite)
                     newPopulation.Add(s.CurrentSnapshot.FittestGenome); //elitism                
                 s.CullTheWeak();
@@ -121,8 +125,8 @@ namespace INTEL
                 else
                     Species.Add(new INTEL.Species(g));
             }
-
-
+            
+            Fittest = Species.Max().CurrentSnapshot.FittestGenome;
         }
 
         private Genome InterspeciesGenome(Species local)

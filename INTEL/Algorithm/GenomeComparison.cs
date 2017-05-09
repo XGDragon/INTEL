@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace INTEL
 {
-    class GenomeComparison
+    public class GenomeComparison
     {
         public const uint Matching = 0;
         public const uint Disjoint = 1;

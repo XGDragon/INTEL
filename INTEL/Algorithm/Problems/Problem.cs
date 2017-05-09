@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace INTEL
 {
-    abstract class Problem
+    public abstract class Problem
     {
         public const double NO_CHANGE_THRESHOLD = 0.001d;
 

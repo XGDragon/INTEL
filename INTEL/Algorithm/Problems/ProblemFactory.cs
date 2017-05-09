@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace INTEL
 {
-    abstract class ProblemFactory
+    public abstract class ProblemFactory
     {
         public abstract string Name { get; }
         public double MaxFitness { get; protected set; }

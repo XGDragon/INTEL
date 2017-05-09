@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace INTEL
 {
-    class IPDProblem : Problem
+    public class IPDProblem : Problem
     {
         public override ActivationFunction Activation => throw new NotImplementedException();
 

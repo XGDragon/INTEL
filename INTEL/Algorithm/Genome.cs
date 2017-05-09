@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace INTEL
 {
-    class Genome : IComparable<Genome>
+    public class Genome : IComparable<Genome>
     {
         //candidates for privatization
         public NodeCollection Nodes { get; private set; }
