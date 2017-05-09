@@ -22,10 +22,10 @@ namespace INTEL
 
         private int _excess = 0;
         private int _disjoint = 0;
-        private decimal _w = 0;
+        private double _w = 0;
         private int _n = 0;
 
-        public decimal Distance { get; private set; }
+        public double Distance { get; private set; }
 
         public GenomeComparison(Genome a, Genome b)
         {
@@ -64,8 +64,8 @@ namespace INTEL
                 }
             }
 
-            decimal e = (Parameter.c1 * _excess) / _n;
-            decimal d = (Parameter.c2 * _disjoint) / _n;
+            double e = (Parameter.c1 * _excess) / _n;
+            double d = (Parameter.c2 * _disjoint) / _n;
             Distance = e + d + (Parameter.c3 * _w);
         }
 

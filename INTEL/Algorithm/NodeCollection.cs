@@ -94,8 +94,8 @@ namespace INTEL
                 c.MutateWeight();
             }
 
-            bool newConnection = Program.R.NextDecimal() < Parameter.MutationAddConnection;
-            bool newNode = Program.R.NextDecimal() < Parameter.MutationAddNode;
+            bool newConnection = Program.R.NextDouble() < Parameter.MutationAddConnection;
+            bool newNode = Program.R.NextDouble() < Parameter.MutationAddNode;
 
             if (!newNode && newConnection)
                 MutateNewConnection();  //we dont add connections when adding nodes..
@@ -105,7 +105,7 @@ namespace INTEL
 
         private void MutateNewConnection()
         {
-            bool recurrentAllowed = Program.R.NextDecimal() < Parameter.MutationRecurrency;
+            bool recurrentAllowed = Program.R.NextDouble() < Parameter.MutationRecurrency;
             List<(Node a, Node b)> potentialConnections = new List<(Node a, Node b)>();
             List<Node>[] ho = new List<Node>[] { _hidden, _outputs };
             
@@ -117,8 +117,11 @@ namespace INTEL
                                 potentialConnections.Add((a, b));
             //all nodes are eligible as 'from'
             //only hidden and outputs and eligible as 'to'
-            var ab = potentialConnections[Program.R.Next(potentialConnections.Count)];
-            Connect(ab.a, ab.b);
+            if (potentialConnections.Count > 0)
+            {
+                var ab = potentialConnections[Program.R.Next(potentialConnections.Count)];
+                Connect(ab.a, ab.b);
+            }
         }
 
         private void MutateNewNode()
@@ -151,7 +154,7 @@ namespace INTEL
         /// Obtain inputs for Input Nodes
         /// </summary>
         /// <param name="inputs">Array of inputs, where InputNode[0].Input is set to inputs[0]</param>
-        public void Accept(decimal[] inputs)
+        public void Accept(double[] inputs)
         {
             for (int i = 0; i < _inputs.Count && i < inputs.Length; i++)
                 _inputs[i].Input = inputs[i];
@@ -183,9 +186,9 @@ namespace INTEL
         /// <summary>
         /// Reports a vector of all node Outputs.
         /// </summary>
-        public decimal[] AllOutputs()
+        public double[] AllOutputs()
         {
-            decimal[] d = new decimal[_nodesList.Count];
+            double[] d = new double[_nodesList.Count];
             for (int i = 0; i < _nodesList.Count; i++)
                 d[i] = _nodesList[i].Output;
             return d;
@@ -194,9 +197,9 @@ namespace INTEL
         /// <summary>
         /// Reports a vector of all Output node Outputs.
         /// </summary>
-        public decimal[] Outputs()
+        public double[] Outputs()
         {
-            decimal[] d = new decimal[_outputs.Count];
+            double[] d = new double[_outputs.Count];
             for (int i = 0; i < _outputs.Count; i++)
                 d[i] = _outputs[i].Output;
             return d;

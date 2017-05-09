@@ -4,33 +4,45 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MathNet.Numerics.LinearAlgebra;
 
 namespace INTEL
 {
-    class Species : ICollection<Genome>, IComparable<Species>
+    class Species : IComparable<Species>
     {
         public Genome Representative { get; private set; }
-        public int GenerationsExisted { get { return _data.Count; } }
-        public bool EliminateSpecies { get; set; } //mean fitness to 0.01?
-        public Data CurrentData { get; private set; }
-        public int Offspring { get; private set; }
-        public bool Elite { get; set; }
+        public int GenerationsExisted { get { return _snapshots.Count; } }
+        public Snapshot CurrentSnapshot { get; private set; }
+        public int AllowedOffspring { get; private set; }
+        public bool Elite { get { return (AllowedOffspring > 0 && _parents.Count > Parameter.ElitismThreshold); } }
+        public int ParentCount { get { return _parents.Count; } }
 
-        private List<Genome> _offspring = new List<Genome>();
-        private List<Genome> _parents = new List<Genome>();
-        private Dictionary<int, Data> _data = new Dictionary<int, Data>();        
+        private List<Genome> _offspring = new List<Genome>();   //before fitness evaluations
+        private List<Genome> _parents = new List<Genome>();     //after fitness evaluations
+
+        private List<Snapshot> _snapshots = new List<Snapshot>();    
 
         public Species(Genome representative)
         {
-            Add(representative);
+            AddOffspring(representative);
             Representative = representative;
-            EliminateSpecies = false;
         }
 
-        public void MakeMembersSenior()
+        public void EvaluateSpecies(Problem[] problems)
         {
-            _parents = _offspring;
-            Representative = _parents[Program.R.Next(_parents.Count)];
+            _parents.Clear();
+
+            foreach (Genome o in _offspring)
+            {
+                o.EvaluateFitness(problems);
+                _parents.Add(o);
+            }
+
+            Representative = RandomParent();
+            _offspring.Clear();
+
+            CurrentSnapshot = new Snapshot(this);
+            _snapshots.Add(CurrentSnapshot);
         }
 
         public Genome FittestGenome()
@@ -40,23 +52,17 @@ namespace INTEL
 
         public Genome RandomParent()
         {
-            return _parents[Program.R.Next(_parents.Count)];
-        }
-
-        public void UpdateData(int generation)
-        {
-            CurrentData = new Data(this, generation);
-            _data[generation] = CurrentData;
+            return (_parents.Count > 0) ? _parents[Program.R.Next(_parents.Count)] : null;
         }
 
         public void CheckIfStagnant()
         {
-            EliminateSpecies = false;
-            if (Count > 0 && GenerationsExisted >= Parameter.StagnationGenerations)
+            if (_parents.Count > 0 && GenerationsExisted >= Parameter.StagnationGenerations)
             {
-                var a = _data.Values;
-                decimal avg = a.Average((Species.Data d) => { return d.MaxFitness; });
-                EliminateSpecies = (a.Where((Species.Data d) => { return (Math.Abs(d.MaxFitness - avg) < Parameter.StagnationThreshold); }).Count() == Parameter.StagnationGenerations);
+                var a = _snapshots;
+                double avg = a.Average((Species.Snapshot d) => { return d.MaxFitness; });
+                if (a.TrueForAll(d => { return Math.Abs(d.MaxFitness - avg) < Parameter.StagnationThreshold; }))
+                    EliminateSpecies();
             }
         }
 
@@ -64,57 +70,89 @@ namespace INTEL
         {
             if (GenerationsExisted >= Parameter.RefocusGenerations)
             {
-                List<Species.Data> slice = new List<Data>();
-                for (int i = GenerationsExisted - (int)Parameter.RefocusGenerations; i < GenerationsExisted; i++)
-                    if (_data.ContainsKey(i))
-                        slice.Add(_data[i]);
-                decimal avg = slice.Average((Species.Data d) => { return d.MaxFitness; });
-                return (slice.Where((Species.Data d) => { return (Math.Abs(d.MaxFitness - avg) < Parameter.RefocusThreshold); }).Count() == Parameter.RefocusGenerations);
+                var slice = _snapshots.GetRange(GenerationsExisted - (int)Parameter.RefocusGenerations, (int)Parameter.RefocusGenerations);
+                double avg = slice.Average((Species.Snapshot d) => { return d.MaxFitness; });
+                return slice.TrueForAll(d => { return Math.Abs(d.MaxFitness - avg) < Parameter.RefocusThreshold; });
             }
             return false;
         }
 
-        public void CalculateOffspring(ref decimal overflow, decimal globalMeanFitness)
+        public void EliminateSpecies()
         {
-            decimal number_offspring = CurrentData.MeanFitness / globalMeanFitness * Parameter.PopulationSize;
+            CurrentSnapshot.FalsifyMeanFitness();
+        }
+
+        public void CalculateOffspring(ref double overflow, double globalMeanFitness)
+        {
+            double number_offspring = CurrentSnapshot.MeanFitness / globalMeanFitness * Parameter.PopulationSize;
             overflow += number_offspring - Math.Truncate(number_offspring);
             if (overflow >= 1)
             {
-                Offspring = (int)Math.Ceiling(number_offspring);
+                AllowedOffspring = (int)Math.Ceiling(number_offspring);
                 overflow--;
             }
             else
-                Offspring = (int)Math.Floor(number_offspring);
+                AllowedOffspring = (int)Math.Floor(number_offspring);
         }
 
         public void CullTheWeak()
         {
-            _offspring.Sort();
-            _offspring.RemoveRange(0, (int)Math.Floor(_offspring.Count * Parameter.KillPercentage));
+            if (_parents.Count > Parameter.KillAmount && Math.Ceiling(_parents.Count * (1 - Parameter.KillPercentage)) > 2)
+            {
+                _parents.Sort();    //worst to best
+                _parents.RemoveRange(0, (int)Math.Floor(_parents.Count * Parameter.KillPercentage));
+            }
         }
 
-        public Genome[] Selection(int crossoverCount, int mutationCount)
+        public Genome[] SelectParents(int crossoverCount, int mutationCount)
         {
             Genome[] selected = new Genome[2 * crossoverCount + mutationCount];
 
-            //fully random selection lol pls edit'. ps same selection is allowed
-            for (int i = 0; i < selected.Length; i++)
-                selected[i] = _offspring[Program.R.Next(_offspring.Count)];
+            //use pressure to balloon fitness values for selection
+            double[] pressuredFitness = new double[_parents.Count];
+            for (int i = 0; i < pressuredFitness.Length; i++)
+            {
+                pressuredFitness[i] = Math.Pow(_parents[i].Fitness, Parameter.SelectionPressure);
+                if (i > 0)
+                    pressuredFitness[i] += pressuredFitness[i - 1];
+            }
+            double sum = pressuredFitness.Last();
+            for (int i = 0; i < pressuredFitness.Length; i++)
+                pressuredFitness[i] /= sum;
+
+            //stochastic universal sampling
+            int n = selected.Length;
+            double pointStart = Program.R.NextDouble() / n;
+            double d = pointStart;
+            for (int i = 0, p = 0; i < n; i++, d += pointStart) //loop pointers
+            {
+                while (d > pressuredFitness[p])
+                    p++;
+                selected[i] = _parents[p];                
+            }
+
+            //fisheryates shuffle
+            while (n > 1)
+            {
+                int k = Program.R.Next(n--);
+                var temp = selected[n];
+                selected[n] = selected[k];
+                selected[k] = temp;
+            }
 
             return selected;
         }
 
         public int CompareTo(Species other)
         {
-            if (this.CurrentData.MaxFitness > other.CurrentData.MaxFitness)
+            if (this.CurrentSnapshot.MaxFitness > other.CurrentSnapshot.MaxFitness)
                 return 1;
-            if (this.CurrentData.MaxFitness < other.CurrentData.MaxFitness)
+            if (this.CurrentSnapshot.MaxFitness < other.CurrentSnapshot.MaxFitness)
                 return -1;
             else return 0;
         }
-
-        #region ICollection implementation
-        public void Add(Genome g)
+        
+        public void AddOffspring(Genome g)
         {
             if (g.MemberOf != null)
                 g.MemberOf._offspring.Remove(g);
@@ -123,69 +161,46 @@ namespace INTEL
             g.MemberOf._offspring.Add(g);
         }
 
-        public void Clear()
+        public override string ToString()
         {
-            ((ICollection<Genome>)_offspring).Clear();
+            return _offspring.Count + "(+"+AllowedOffspring+") offspring, " + _parents.Count + " parents; " + CurrentSnapshot.ToString();
         }
 
-        public bool Contains(Genome item)
+        public struct Snapshot : IComparable<Snapshot>
         {
-            return ((ICollection<Genome>)_offspring).Contains(item);
-        }
+            private const double ELIMINATION_FITNESS = 0.1d;
 
-        public void CopyTo(Genome[] array, int arrayIndex)
-        {
-            ((ICollection<Genome>)_offspring).CopyTo(array, arrayIndex);
-        }
-
-        public bool Remove(Genome g)
-        {
-            g.MemberOf = null;
-            return ((ICollection<Genome>)_offspring).Remove(g);
-        }
-
-        public IEnumerator<Genome> GetEnumerator()
-        {
-            return ((ICollection<Genome>)_offspring).GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return ((ICollection<Genome>)_offspring).GetEnumerator();
-        }
-
-        public int Count => ((ICollection<Genome>)_offspring).Count;
-
-        public bool IsReadOnly => ((ICollection<Genome>)_offspring).IsReadOnly;
-        #endregion
-        
-        public struct Data : IComparable<Data>
-        {
-            public int Generation { get; private set; }
-            public decimal MeanFitness { get; private set; }
-            public decimal MaxFitness { get; private set; }
+            public double MeanFitness { get { return (EliminateSpecies) ? ELIMINATION_FITNESS : _meanFitness; } }
+            public double MaxFitness { get; private set; }
             public Genome FittestGenome { get; private set; }
+            public bool EliminateSpecies { get; private set; }
 
-            public Data(Species s, int generation)
+            private double _meanFitness;
+
+            public Snapshot(Species s)
             {
-                Generation = generation;
-
-                if (s._offspring.Count > 0)
+                EliminateSpecies = false;
+                if (s._parents.Count > 0)
                 {
-                    MeanFitness = s._offspring.Average((Genome g) => { return g.Fitness; });
-                    Genome f = s._offspring.Max();
+                    _meanFitness = s._parents.Average((Genome g) => { return g.Fitness; });
+                    Genome f = s._parents.Max();
                     MaxFitness = f.Fitness;
                     FittestGenome = f;
                 }
                 else
                 {
-                    MeanFitness = 0;
+                    _meanFitness = 0;
                     MaxFitness = 0;
                     FittestGenome = null;
                 }
             }
 
-            public int CompareTo(Data other)
+            public void FalsifyMeanFitness()
+            {
+                EliminateSpecies = true;
+            }
+
+            public int CompareTo(Snapshot other)
             {
                 if (this.MaxFitness > other.MaxFitness)
                     return 1;
@@ -196,7 +211,7 @@ namespace INTEL
 
             public override string ToString()
             {
-                return Generation + ": Mean=" + MeanFitness.ToString("F") + ", Max=" + MaxFitness.ToString("F");
+                return "Mean=" + MeanFitness.ToString("F") + ", Max=" + MaxFitness.ToString("F");
             }
         }
     }

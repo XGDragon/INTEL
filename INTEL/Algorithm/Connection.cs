@@ -16,7 +16,7 @@ namespace INTEL
         public int Innovation { get; private set; }
         public Node From { get; private set; }
         public Node To { get; private set; }
-        public decimal Weight { get; private set; }
+        public double Weight { get; private set; }
         public bool Enable { get; set; }
         
         public Connection(Node from, Node to)
@@ -32,7 +32,7 @@ namespace INTEL
 
             From = from;
             To = to;
-            Weight = (Program.R.NextDecimal() * Parameter.MutationWeightRange) - (Parameter.MutationWeightRange / 2);
+            Weight = (Program.R.NextDouble() * Parameter.MutationWeightRange) - (Parameter.MutationWeightRange / 2);
             Enable = true;
         }
 
@@ -51,7 +51,7 @@ namespace INTEL
             From = from;
             To = to;
 
-            if (Program.R.NextDecimal() < Parameter.CrossoverMultipoint)
+            if (Program.R.NextDouble() < Parameter.CrossoverMultipoint)
                 Weight = (copy1.Weight + copy2.Weight) / 2;
             else
             {
@@ -61,22 +61,22 @@ namespace INTEL
             if (copy1.Enable && copy2.Enable)
                 Enable = true;
             else
-                Enable = (!copy1.Enable && !copy2.Enable) ? false : (Program.R.NextDecimal() > Parameter.CrossoverDisable);
+                Enable = (!copy1.Enable && !copy2.Enable) ? false : (Program.R.NextDouble() > Parameter.CrossoverDisable);
         }
 
         public void ReEnable()
         {
             if (!Enable)
-                Enable = (Program.R.NextDecimal() < Parameter.MutationReEnable);
+                Enable = (Program.R.NextDouble() < Parameter.MutationReEnable);
         }
 
         public void MutateWeight()
         {
-            if (Program.R.NextDecimal() < Parameter.MutationChangeWeight)
+            if (Program.R.NextDouble() < Parameter.MutationChangeWeight)
                 Weight =
                     Math.Max(-Parameter.MutationMaxWeightRange,
                         Math.Min(Parameter.MutationMaxWeightRange,
-                            Weight + Parameter.MutationWeightRange * (Program.R.NextDecimal() - 0.5m)));
+                            Weight + Parameter.MutationWeightRange * (Program.R.NextDouble() - 0.5d)));
         }
 
         public override string ToString()
@@ -85,7 +85,7 @@ namespace INTEL
             return d + Innovation + ": [" + Weight.ToString("F") + "] " + From.ID + "(" + From.NodeType + ") > " + To.ID + "(" + To.NodeType + ")";
         }
 
-        public static decimal operator +(Connection a, Connection b) { return a.Weight + b.Weight; }
-        public static decimal operator -(Connection a, Connection b) { return a.Weight - b.Weight; }
+        public static double operator +(Connection a, Connection b) { return a.Weight + b.Weight; }
+        public static double operator -(Connection a, Connection b) { return a.Weight - b.Weight; }
     }
 }

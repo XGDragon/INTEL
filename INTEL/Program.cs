@@ -6,11 +6,6 @@ using System.Windows.Forms;
 
 namespace INTEL
 {
-    class Random : System.Random
-    {
-        public decimal NextDecimal() { return (decimal)base.NextDouble(); }
-    }
-
     static class Program
     {
         public static Random R { get; private set; }

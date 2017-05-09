@@ -10,7 +10,7 @@ namespace INTEL
         static ProblemFactory[] _problems = new ProblemFactory[] { new XORProblemFactory(), new IPDProblemFactory() };
 
         const int PROBLEM = 1;      //set to 0 to allow choice..
-        const int GENERATIONS = 2;  //set to 0 to allow choice..
+        const int GENERATIONS = 12;  //set to 0 to allow choice..
 
         public static void Initialize(DataVisual dv)
         {

@@ -8,17 +8,17 @@ namespace INTEL
 {
     class Node
     {
-        private const decimal BIAS_INPUT = 1;
+        private const double BIAS_INPUT = 1;
 
         public enum Type { Input, Output, Hidden, Bias };
 
         public int ID { get; protected set; }
         public Type NodeType { get; protected set; }
 
-        private decimal _input = 0;
-        public virtual decimal Input { get { return (NodeType == Type.Bias) ? BIAS_INPUT : _input; } set { _input = value; } }
-        public decimal Output { get; protected set; }
-        public decimal Depth { get; set; }
+        private double _input = 0;
+        public virtual double Input { get { return (NodeType == Type.Bias) ? BIAS_INPUT : _input; } set { _input = value; } }
+        public double Output { get; protected set; }
+        public double Depth { get; set; }
         
         //outgoing connections
         private Dictionary<Node, Connection> _connections = new Dictionary<Node, Connection>();
@@ -48,7 +48,7 @@ namespace INTEL
 
         public void AddConnection(Connection c)
         {
-            _connections[c.From] = c;
+            _connections[c.To] = c;
         }
 
         public void Activation(Problem.ActivationFunction af)

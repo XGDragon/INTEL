@@ -12,17 +12,17 @@ namespace INTEL
         //candidates for privatization
         public NodeCollection Nodes { get; private set; }
         
-        public decimal Fitness { get; private set; }
+        public double Fitness { get; private set; }
         public Species MemberOf { get; set; }
 
         public Genome()
         {
             Nodes = new NodeCollection();
 
-            Nodes.Create(0, Node.Type.Output);
-            Nodes.Create(1, Node.Type.Bias);
+            Nodes.Add(new Node(0, Node.Type.Output));
+            Nodes.Add(new Node(1, Node.Type.Bias));
             for (int i = 0; i < Parameter.MaxInputNodes; i++)
-                Nodes.Create(i + 2, Node.Type.Input);
+                Nodes.Add(new Node(i + 2, Node.Type.Input));
 
             Nodes.Connect(Nodes[1], Nodes[0]);
             for (int i = 0; i < Parameter.InputNodes && i < Parameter.MaxInputNodes; i++)
@@ -47,7 +47,7 @@ namespace INTEL
             for (int i = 0; i < problems.Length; i++)
             {
                 Problem p = problems[i];
-                List<decimal[]> outputs = new List<decimal[]>();
+                List<double[]> outputs = new List<double[]>();
 
                 while (p.HasInput)
                 {
@@ -62,13 +62,13 @@ namespace INTEL
                     while (no_change_count < Nodes.Count && index_loop < 3 * Nodes.Connections.Count)
                     {
                         index_loop++;
-                        decimal[] old_outputs = Nodes.AllOutputs();
+                        double[] old_outputs = Nodes.AllOutputs();
                         for (int j = 0; j < Nodes.Count; j++)
                             Nodes[j].Export();
 
                         Nodes.Activate(p.Activation, Node.Type.Hidden, Node.Type.Output);
                         
-                        decimal[] new_outputs = Nodes.AllOutputs();
+                        double[] new_outputs = Nodes.AllOutputs();
                         for (int j = 0; j < old_outputs.Length; j++)
                             no_change_count += (Math.Abs(new_outputs[j] - old_outputs[j]) < Problem.NO_CHANGE_THRESHOLD) ? 1 : 0;
                     }

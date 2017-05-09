@@ -10,33 +10,33 @@ namespace INTEL
     {
         private int _patternEnumerator = 0;
 
-        private decimal[][] _inputPattern = new decimal[4][]
+        private double[][] _inputPattern = new double[4][]
             {
-                new decimal[] { 0, 0 },
-                new decimal[] { 0, 1 },
-                new decimal[] { 1, 0 },
-                new decimal[] { 1, 1 }
+                new double[] { 0, 0 },
+                new double[] { 0, 1 },
+                new double[] { 1, 0 },
+                new double[] { 1, 1 }
             };
 
-        private decimal[][] _outputPattern = new decimal[4][]
+        private double[][] _outputPattern = new double[4][]
             {
-                new decimal[] { 0 },
-                new decimal[] { 1 },
-                new decimal[] { 1 },
-                new decimal[] { 0 }
+                new double[] { 0 },
+                new double[] { 1 },
+                new double[] { 1 },
+                new double[] { 0 }
             };
         
-        public override ActivationFunction Activation => (decimal input) => 
+        public override ActivationFunction Activation => (double input) => 
         {
             double e = -4.9 * (double)input; //Parameter used by the paper for XOR problem, pp 112
-            return (decimal)(1 / (1 + Math.Exp(e)));
+            return (double)(1 / (1 + Math.Exp(e)));
         };
 
-        public override FitnessFunction Fitness => (List<decimal[]> outputs) =>
+        public override FitnessFunction Fitness => (List<double[]> outputs) =>
         {
             _patternEnumerator = 0; //reset the enumerator for future use of this problem instance
 
-            decimal totalFitness = 0;
+            double totalFitness = 0;
             for (int i = 0; i < outputs.Count; i++)
                 totalFitness += Math.Abs(_outputPattern[i][0] - outputs[i][0]);
 

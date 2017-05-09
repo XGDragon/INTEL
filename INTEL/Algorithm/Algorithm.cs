@@ -9,13 +9,12 @@ namespace INTEL
     class Algorithm
     {
         public Problem[] Problem { get; private set; }
-        public decimal MaxFitness { get; private set; }
-
-        public List<Genome> Population = new List<Genome>();
+        public double MaxFitness { get; private set; }
+        
         public List<Species> Species = new List<Species>();
-        //public List<Species> Species = new List<Species>(); //issues with who controls who
         
         public int Generation { get; private set; }
+        public Genome Fittest { get; private set; }
 
         public Algorithm(ProblemFactory pf)
         {
@@ -27,99 +26,85 @@ namespace INTEL
         public void Run(int maxGenerations)
         {
             Initialize();
-            Console.WriteLine("Generation " + Generation);
+            AnnounceFittestGenome();
 
             while (Generation++ < maxGenerations) //best fitness < maxfitness, otherwise stop
             {
-                Console.WriteLine("Generation " + Generation);
+                AnnounceFittestGenome();
                 NextGeneration();
             }
+        }
+
+        private void AnnounceFittestGenome()
+        {
+            Console.WriteLine("Generation " + Generation + ": Top fitness is at " + Fittest.Fitness);
         }
 
         private void Initialize()
         {
             //Initial Population
+            List<Genome> initialPopulation = new List<Genome>();
             for (int i = 0; i < Parameter.PopulationSize; i++)
-                Population.Add(new Genome());
+                initialPopulation.Add(new Genome());
 
-            //Speciate (potentially encapsulate)
-            Species.Add(new Species(Population[0]));
-            for (int i = 1; i < Population.Count; i++)
+            //Speciate
+            foreach (Genome g in initialPopulation)
             {
-                bool assigned_existing_species = false;
-                bool new_species = false;
-                int index_species = 0;
-
-                while (!assigned_existing_species && !new_species)
-                {
-                    GenomeComparison gc = new GenomeComparison(Population[i], Species[index_species].Representative);
-                    if (gc.Distance < Parameter.SpeciationThreshold)
-                    {
-                        Species[index_species].Add(Population[i]);
-                        assigned_existing_species = true;
-                    }
-                    index_species++;
-                    if (index_species > Species.Count - 1 && !assigned_existing_species)
-                        new_species = true;
-                }
-
-                if (new_species)
-                    Species.Add(new Species(Population[i]));
+                var match = Species.Find(s => { return (new GenomeComparison(g, s.Representative).Distance < Parameter.SpeciationThreshold); });
+                if (match != null)
+                    match.AddOffspring(g);
+                else
+                    Species.Add(new INTEL.Species(g));
             }
 
             Generation = 0;
         }
 
         private void NextGeneration()
-        {
-            //Evaluate
-            foreach (Genome g in Population)
-                g.EvaluateFitness(Problem);
-            
-            //Check for Stagnation/Refocusing
+        {            
+            //Evaluate and check for Stagnation
             foreach (Species s in Species)
             {
-                s.UpdateData(Generation);
+                s.EvaluateSpecies(Problem);
                 s.CheckIfStagnant();
             }
 
+            //Check for algorithm refocus
             if (Species.Max().CheckIfRefocus())
             {
                 Species.Sort();     //from worst to best
                 for (int i = 0; i < Species.Count - 2; i++) //exclude the 2 best species
-                    Species[i].EliminateSpecies = (Species[i].CurrentData.MaxFitness > 0);
+                    Species[i].EliminateSpecies();
             }
 
             //check if solution found?
 
             List<Genome> newPopulation = new List<Genome>();
-            Species.RemoveAll((Species s) => { return s.Count == 0; }); //remove empty species
+            Species.RemoveAll((Species s) => { return s.ParentCount == 0; }); //remove empty species
 
             //Get offspring counts
-            decimal avgFitnessAllSpecies = Species.Average((Species s) => { return s.CurrentData.MeanFitness; });
-            decimal overflow = 0;
+            double avgFitnessAllSpecies = Species.Average((Species s) => { return s.CurrentSnapshot.MeanFitness; });
+            double overflow = 0;
             foreach (Species s in Species)
             {
-                s.CalculateOffspring(ref overflow, avgFitnessAllSpecies);
-                s.Elite = (s.Offspring > 0 && s.Count > Parameter.ElitismThreshold);
+                s.CalculateOffspring(ref overflow, avgFitnessAllSpecies); //WRONG VALUE
                 if (s.Elite)
-                    newPopulation.Add(s.CurrentData.FittestGenome); //elitism
-                if (s.Count > Parameter.KillPercentage && Math.Ceiling(s.Count * (1 - Parameter.KillPercentage)) > 2)
-                    s.CullTheWeak();
+                    newPopulation.Add(s.CurrentSnapshot.FittestGenome); //elitism                
+                s.CullTheWeak();
             }
             
             //Crossover & mutation
             foreach (Species s in Species)
             {
-                int overall = s.Offspring - ((s.Elite) ? 1 : 0);
+                int overall = s.AllowedOffspring - ((s.Elite) ? 1 : 0);
                 int crossovers = (int)Math.Round(overall * Parameter.CrossoverPercentage);
                 int mutations = overall - crossovers;
-                Genome[] selected = s.Selection(crossovers, mutations);
+                Genome[] selected = s.SelectParents(crossovers, mutations);
                 int parent = 0;
 
                 while (crossovers-- > 0)
                 {
-                    if (Program.R.NextDecimal() < Parameter.CrossoverInterspecies && Species.Count > 1)
+                    if (Program.R.NextDouble() < Parameter.CrossoverInterspecies && Species.Count > 1)
                         selected[parent] = InterspeciesGenome(s);
                     newPopulation.Add(new Genome(selected[parent++], selected[parent++]));
                 }
@@ -132,17 +117,10 @@ namespace INTEL
             {
                 var match = Species.Find(s => { return (new GenomeComparison(g, s.Representative).Distance < Parameter.SpeciationThreshold); });
                 if (match != null)
-                    ;
-                    //get random ref from old pop if count > 0
+                    match.AddOffspring(g);
+                else
+                    Species.Add(new INTEL.Species(g));
             }
-                //Speciation
-                bool assigned = false;
-                int popref = -1;
-                while (!assigned && ++popref < newPopulation.Count)//i think
-                {
-
-                }
-            
 
 
         }
