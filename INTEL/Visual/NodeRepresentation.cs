@@ -32,5 +32,10 @@ namespace INTEL.Visual
         {
             e.Graphics.DrawEllipse(Pens.DarkSlateGray, 0, 0, Width, Height);
         }
+
+        public override string ToString()
+        {
+            return ID + " @ " + Depth;
+        }
     }
 }

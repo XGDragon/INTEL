@@ -34,11 +34,18 @@ namespace INTEL.Network
             _bgw.WorkerReportsProgress = true;
             _bgw.DoWork += _bgw_DoWork;
             _bgw.ProgressChanged += _bgw_ProgressChanged;
+            _bgw.RunWorkerCompleted += _bgw_RunWorkerCompleted;
             _a = GetAlgorithm();
             _a.GenerationCompleted += _a_GenerationCompleted;
             _bgw.RunWorkerAsync();   
 
             Application.Run(_dv);
+        }
+
+        private static void _bgw_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if (e.Error != null)
+                throw e.Error;
         }
 
         private static void _a_GenerationCompleted(Algorithm.Info info)

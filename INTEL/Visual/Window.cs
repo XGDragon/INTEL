@@ -51,6 +51,8 @@ namespace INTEL.Visual
 
         private void AddGenomeToRepresentation(INTEL.Network.Algorithm.Info info)
         {
+            if (_representations.Count > 0)
+                _representations[_representations.Count - 1].Hide();
             _representations.Add(new GenomeRepresentation(info.Fittest));
             GenomeCounter.Maximum = _representations.Count;
             GenomeCounter.Value = _representations.Count;
@@ -60,6 +62,7 @@ namespace INTEL.Visual
         {
             GenomePanel.Controls.Clear();
             GenomePanel.Controls.Add(_representations[(int)GenomeCounter.Value - 1]);
+            GenomePanel.Controls[0].Show();
         }
     }
 }

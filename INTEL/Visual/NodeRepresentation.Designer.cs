@@ -33,6 +33,7 @@
             // 
             // NodeTypeLabel
             // 
+            this.NodeTypeLabel.BackColor = System.Drawing.Color.Transparent;
             this.NodeTypeLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.NodeTypeLabel.Location = new System.Drawing.Point(0, 0);
             this.NodeTypeLabel.Name = "NodeTypeLabel";
@@ -45,6 +46,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.Color.Transparent;
             this.Controls.Add(this.NodeTypeLabel);
             this.Margin = new System.Windows.Forms.Padding(0);
             this.Name = "NodeRepresentation";
