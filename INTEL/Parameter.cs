@@ -73,7 +73,7 @@ namespace INTEL
 
         //Population
         private static Parameter _populationSize = new Parameter("Population Size", 150);
-        public static double PopulationSize { get { return _populationSize.Value; } }
+        public static double PopulationSize { get { return (_populationSize.Value > 10) ? ((_populationSize.Value % 2 == 0) ? _populationSize.Value : _populationSize.Value + 1) : 10; } }
 
         private static Parameter _inputNodes = new Parameter("Connected Input Nodes", 2, "if less than max, we start with a subset and let evolution decide which ones are necessary");
         public static double InputNodes { get { return _inputNodes.Value; } }

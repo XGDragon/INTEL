@@ -66,18 +66,45 @@
     <Compile Include="Algorithm\Problems\IPDProblemFactory.cs" />
     <Compile Include="Algorithm\Problems\XORProblemFactory.cs" />
     <Compile Include="Algorithm\Species.cs" />
-    <Compile Include="DataVisual.cs">
+    <Compile Include="Visual\GenomeRepresentation.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Visual\GenomeRepresentation.Designer.cs">
+      <DependentUpon>GenomeRepresentation.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Visual\NodeRepresentation.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Visual\NodeRepresentation.Designer.cs">
+      <DependentUpon>NodeRepresentation.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Visual\SpeciesRepresentation.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Visual\SpeciesRepresentation.Designer.cs">
+      <DependentUpon>SpeciesRepresentation.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Visual\Window.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="DataVisual.Designer.cs">
-      <DependentUpon>DataVisual.cs</DependentUpon>
+    <Compile Include="Visual\Window.Designer.cs">
+      <DependentUpon>Window.cs</DependentUpon>
     </Compile>
     <Compile Include="Parameter.cs" />
     <Compile Include="Algorithm\Problems\Problem.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="DataVisual.resx">
-      <DependentUpon>DataVisual.cs</DependentUpon>
+    <EmbeddedResource Include="Visual\GenomeRepresentation.resx">
+      <DependentUpon>GenomeRepresentation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Visual\NodeRepresentation.resx">
+      <DependentUpon>NodeRepresentation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Visual\SpeciesRepresentation.resx">
+      <DependentUpon>SpeciesRepresentation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Visual\Window.resx">
+      <DependentUpon>Window.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

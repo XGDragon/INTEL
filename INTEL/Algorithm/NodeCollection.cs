@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace INTEL
+namespace INTEL.Network
 {
     public class NodeCollection : ICollection<Node>
     {
@@ -18,7 +18,9 @@ namespace INTEL
         private List<Node> _outputs = new List<Node>();
 
         private Dictionary<int, Connection> _connections = new Dictionary<int, Connection>();
+
         public IReadOnlyDictionary<int, Connection> Connections { get { return _connections; } }
+        public IReadOnlyList<Node> List { get { return _nodesList; } }
 
         public Node this[int i] { get { return _nodesDict[i]; } }
 

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.ComponentModel;
 
-namespace INTEL
+namespace INTEL.Network
 {
     static class Program
     {
@@ -15,11 +15,11 @@ namespace INTEL
         private static BackgroundWorker _bgw = new BackgroundWorker();
         private static ProblemFactory[] _problems = new ProblemFactory[] { new XORProblemFactory(), new IPDProblemFactory() };
 
-        private static DataVisual _dv;
+        private static Visual.Window _dv;
         private static Algorithm _a;
 
         const int PROBLEM = 1;      //set to 0 to allow choice..
-        const int GENERATIONS = 102;  //set to 0 to allow choice..
+        const int GENERATIONS = 20;  //set to 0 to allow choice..
 
         /// <summary>
         /// The main entry point for the application.
@@ -29,26 +29,26 @@ namespace INTEL
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            _dv = new Visual.Window();
 
             _bgw.WorkerReportsProgress = true;
             _bgw.DoWork += _bgw_DoWork;
             _bgw.ProgressChanged += _bgw_ProgressChanged;
             _a = GetAlgorithm();
-            _dv = new DataVisual(_a);
-            _a.GenerationComplete += _a_GenerationComplete;
+            _a.GenerationCompleted += _a_GenerationCompleted;
+            _bgw.RunWorkerAsync();   
 
-            _bgw.RunWorkerAsync();         
             Application.Run(_dv);
         }
 
-        private static void _a_GenerationComplete(object sender, EventArgs e)
+        private static void _a_GenerationCompleted(Algorithm.Info info)
         {
-            _bgw.ReportProgress(0);
+            _bgw.ReportProgress(info.Generation, info);
         }
 
         private static void _bgw_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            _dv.AlgorithmUpdated();
+            _dv.AlgorithmUpdated((Algorithm.Info)e.UserState);
         }
 
         private static void _bgw_DoWork(object sender, DoWorkEventArgs e)

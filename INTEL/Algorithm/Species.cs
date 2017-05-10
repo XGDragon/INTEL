@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MathNet.Numerics.LinearAlgebra;
 
-namespace INTEL
+namespace INTEL.Network
 {
     public class Species : IComparable<Species>
     {

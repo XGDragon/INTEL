@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace INTEL
+namespace INTEL.Network
 {
     public class Algorithm
     {
@@ -14,8 +14,9 @@ namespace INTEL
         public int Generation { get; private set; }
         public int MaxGenerations { get; private set; }
         public Genome Fittest { get; private set; }
-        
-        public event EventHandler GenerationComplete;
+
+        public delegate void GenerationReportHandler(Algorithm.Info info);
+        public event GenerationReportHandler GenerationCompleted;
 
         public Algorithm(ProblemFactory pf, int maxGenerations)
         {
@@ -40,7 +41,14 @@ namespace INTEL
             if (Fittest != null)
                 Console.WriteLine("Generation " + Generation + ": Top fitness is at " + Fittest.Fitness);
 
-            GenerationComplete(this, EventArgs.Empty);
+            GenerationCompleted(new Info(this));
+        }
+
+        public override string ToString()
+        {
+            if (Fittest != null)
+                return "Generation " + Generation + ": Top fitness is at " + Fittest.Fitness;
+            return base.ToString();
         }
 
         private void InitializeRun()
@@ -51,14 +59,14 @@ namespace INTEL
                 initialPopulation.Add(new Genome());
 
             //Speciate
-            Species = new List<INTEL.Species>();
+            Species = new List<Species>();
             foreach (Genome g in initialPopulation)
             {
                 var match = Species.Find(s => { return (new GenomeComparison(g, s.Representative).Distance < Parameter.SpeciationThreshold); });
                 if (match != null)
                     match.AddOffspring(g);
                 else
-                    Species.Add(new INTEL.Species(g));
+                    Species.Add(new Species(g));
             }
 
             Generation = 0;
@@ -123,7 +131,7 @@ namespace INTEL
                 if (match != null)
                     match.AddOffspring(g);
                 else
-                    Species.Add(new INTEL.Species(g));
+                    Species.Add(new Species(g));
             }
             
             Fittest = Species.Max().CurrentSnapshot.FittestGenome;
@@ -137,6 +145,25 @@ namespace INTEL
                 if (Species[i] != local)
                     q[x] = x++;
             return Species[q[Program.R.Next(q.Length)]].RandomParent();
+        }
+
+        public class Info
+        {
+            public string Title { get; private set; }
+            public Genome Fittest { get; private set; }
+            public Dictionary<int, int> SpeciesMap { get; private set; }
+            public int Generation { get; private set; }
+
+            public Info(Algorithm n)
+            {
+                Title = n.ToString();
+                Fittest = n.Fittest;
+                Generation = n.Generation;
+
+                SpeciesMap = new Dictionary<int, int>();
+                for (int i = 0; i < n.Species.Count; i++)
+                    SpeciesMap.Add(n.Species[i].ID, n.Species[i].OffspringCount);
+            }
         }
     }
 }
