@@ -92,7 +92,6 @@ namespace INTEL.Network
             //check if solution found?
 
             List<Genome> newPopulation = new List<Genome>();
-            Species.RemoveAll((Species s) => { return s.ParentCount == 0; }); //remove empty species
 
             //Get offspring counts
             double sumMeanFitnesses = Species.Sum((Species s) => { return s.CurrentSnapshot.MeanFitness; });
@@ -104,7 +103,8 @@ namespace INTEL.Network
                     newPopulation.Add(s.CurrentSnapshot.FittestGenome); //elitism                
                 s.CullTheWeak();
             }
-            
+            Species.RemoveAll((Species s) => { return s.AllowedOffspring == 0; }); //remove empty species
+
             //Crossover & mutation
             foreach (Species s in Species)
             {
@@ -122,19 +122,26 @@ namespace INTEL.Network
                 }
 
                 while (mutations-- > 0)
-                    newPopulation.Add(new Genome(selected[parent++]));
+                    newPopulation.Add(new Genome(selected[parent++]));                
             }
 
+            //Add to Species as offspring
             foreach (Genome g in newPopulation)
             {
-                var match = Species.Find(s => { return (new GenomeComparison(g, s.Representative).Distance < Parameter.SpeciationThreshold); });
+                var match = Species.Find(s => { var gc = new GenomeComparison(g, s.Representative); Test(gc); return (gc.Distance < Parameter.SpeciationThreshold); });
                 if (match != null)
                     match.AddOffspring(g);
                 else
                     Species.Add(new Species(g));
             }
-            
+
             Fittest = Species.Max().CurrentSnapshot.FittestGenome;
+        }
+
+        private void Test(GenomeComparison gc)
+        {
+            if (gc.Distance >= Parameter.SpeciationThreshold)
+                return;
         }
 
         private Genome InterspeciesGenome(Species local)
@@ -162,7 +169,8 @@ namespace INTEL.Network
 
                 SpeciesMap = new Dictionary<int, int>();
                 for (int i = 0; i < n.Species.Count; i++)
-                    SpeciesMap.Add(n.Species[i].ID, n.Species[i].OffspringCount);
+                    if (n.Species[i].OffspringCount > 0)
+                        SpeciesMap.Add(n.Species[i].ID, n.Species[i].OffspringCount);
             }
         }
     }

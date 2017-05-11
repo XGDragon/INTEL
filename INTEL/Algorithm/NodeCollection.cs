@@ -149,8 +149,9 @@ namespace INTEL.Network
         {
             _hidden.RemoveAll(h =>
             {
-                return _nodesList.TrueForAll(n => { return !n.ConnectsTo(h); });
+                return !h.HasConnections() && _nodesList.TrueForAll(n => { return !n.ConnectsTo(h); });
             });
+            //TO DO: remove nodes that do not eventually end up at the output.
         }
 
         /// <summary>

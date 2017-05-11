@@ -36,7 +36,6 @@ namespace INTEL.Network
         public void EvaluateSpecies(Problem[] problems)
         {
             _parents.Clear();
-
             foreach (Genome o in _offspring)
             {
                 o.EvaluateFitness(problems);

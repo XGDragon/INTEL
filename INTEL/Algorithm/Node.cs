@@ -34,6 +34,11 @@ namespace INTEL.Network
         {
             Depth = copy.Depth;
         }
+        
+        public bool HasConnections()
+        {
+            return _connections.Count > 0;
+        }
 
         public bool ConnectsTo(Node target)
         {
