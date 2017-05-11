@@ -140,6 +140,7 @@ namespace INTEL.Network
                 Connection cut = eligible.ElementAt(Program.R.Next(count));
                 Connect(cut.From, n);
                 Connect(n, cut.To);
+                n.Depth = cut.To.Depth / 2;
                 cut.Enable = false;
             }
         }

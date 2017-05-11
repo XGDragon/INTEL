@@ -4,8 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.ComponentModel;
+using INTEL.Network;
 
-namespace INTEL.Network
+namespace INTEL
 {
     static class Program
     {
@@ -19,7 +20,7 @@ namespace INTEL.Network
         private static Algorithm _a;
 
         const int PROBLEM = 1;      //set to 0 to allow choice..
-        const int GENERATIONS = 20;  //set to 0 to allow choice..
+        const int GENERATIONS = 0;  //set to 0 to allow choice..
 
         /// <summary>
         /// The main entry point for the application.
